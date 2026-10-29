@@ -673,18 +673,22 @@ async fn local_delete_order(
     State(state): State<SharedState>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    {
+    let db_res = {
         let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-        let _ = db::delete_order(&mut db_conn, &id);
+        db::delete_order(&mut db_conn, &id)
+    };
+    if let Err(e) = db_res {
+        eprintln!("[SQLite Error] Failed to delete order {}: {:?}", id, e);
+        return Err(StatusCode::INTERNAL_SERVER_ERROR);
     }
     if let Some(order) = lock.orders.remove(&id) {
         lock.token_to_id.remove(&order.token);
         lock.push_subs.remove(&id);
-        println!("[Order] DELETED order from SQLite and RAM: #{} ({})", order.order_number, id);
-        Ok(StatusCode::OK)
+        println!("[Order] DELETED active order from SQLite and RAM: #{} ({})", order.order_number, id);
     } else {
-        Err(StatusCode::NOT_FOUND)
+        println!("[Order] DELETED archived/persisted order from SQLite: {}", id);
     }
+    Ok(StatusCode::OK)
 }
 
 // Async Web Push Dispatcher

@@ -1291,7 +1291,10 @@
                             <span class="disp-order-num">${o.order_number}</span>
                             ${baseBadge}
                         </div>
-                        <span class="hero-status-pill working">ВИДАНО</span>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span class="hero-status-pill working">ВИДАНО</span>
+                            <button class="btn-delete-chip" onclick="deleteArchivedOrder('${o.id}', '${o.order_number}')" title="Видалити з архіву">✕ ВИДАЛИТИ</button>
+                        </div>
                     </div>
                     <div style="font-size: 1rem; font-weight: 700; color: #fff;">${o.material}</div>
                     <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
@@ -1315,6 +1318,22 @@
                 `;
                 list.appendChild(card);
             });
+        }
+
+        async function deleteArchivedOrder(id, orderNumber) {
+            vibrateDevice([40, 60, 40]);
+            if (!confirm(`Видалити замовлення ${orderNumber} з архіву безповоротно?`)) return;
+            try {
+                const resp = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+                if (resp.ok) {
+                    showToast(`Замовлення ${orderNumber} видалено з архіву`);
+                    fetchArchive();
+                } else {
+                    alert('Помилка при видаленні з архіву');
+                }
+            } catch (e) {
+                console.error('Delete archive error:', e);
+            }
         }
 
         function toggleAuditTimeline(id) {
