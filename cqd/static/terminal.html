@@ -257,6 +257,29 @@
             color: #ff858d;
             border-color: var(--nothing-red);
         }
+        .btn-delete-chip {
+            background: transparent;
+            border: 1px solid rgba(215, 25, 33, 0.45);
+            color: var(--accent-red);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 999px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-delete-chip:active {
+            background: var(--accent-red);
+            color: #ffffff;
+            transform: scale(0.95);
+        }
 
         /* Material Box - Full Width, Unclipped */
         .material-box {
@@ -692,7 +715,10 @@
                 <div class="active-hero">
                     <div class="hero-top-row">
                         <div id="hero-num" class="hero-num">#0000</div>
-                        <div id="hero-status-pill" class="hero-status-pill">PENDING</div>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <div id="hero-status-pill" class="hero-status-pill">PENDING</div>
+                            <button id="hero-delete-btn" class="btn-delete-chip" onclick="deleteActiveOrder()" title="Видалити це замовлення">✕ ВИДАЛИТИ</button>
+                        </div>
                     </div>
 
                     <div class="card-stack">
@@ -1135,9 +1161,12 @@
                     <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">${o.client_name} // ${o.color_code}</div>
                     <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff; margin-top: 6px;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
                     ${delayHtml}
-                    <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between;">
+                    <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
                         <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ ВОДІЯ ↗</a>
-                        <span onclick="selectOrder('${o.id}'); switchMode('workshop');" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; cursor: pointer;">В ЦЕХ ➔</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <button onclick="confirmDeleteOrder('${o.id}', '${o.order_number}');" class="btn-delete-chip" style="padding: 4px 10px; font-size: 0.7rem;">ВИДАЛИТИ ✕</button>
+                            <span onclick="selectOrder('${o.id}'); switchMode('workshop');" style="font-family: var(--font-mono); font-size: 0.72rem; color: #fff; cursor: pointer; padding: 4px 10px; background: rgba(255, 255, 255, 0.1); border-radius: 999px;">В ЦЕХ ➔</span>
+                        </div>
                     </div>
                 `;
                 list.appendChild(card);
@@ -1287,6 +1316,41 @@
             playBeep(660, 0.1);
             await fetch(`/api/terminal/orders/${activeOrderId}/resume`, { method: 'POST' });
             fetchQueue();
+        }
+
+        async function confirmDeleteOrder(id, orderNum) {
+            vibrateDevice([40, 40]);
+            if (!confirm(`Видалити замовлення ${orderNum} з черги та бази даних?`)) {
+                return;
+            }
+            await executeDeleteOrder(id);
+        }
+
+        async function deleteActiveOrder() {
+            if (!activeOrderId) return;
+            const current = orders.find(o => o.id === activeOrderId);
+            const num = current ? current.order_number : `#${activeOrderId}`;
+            await confirmDeleteOrder(activeOrderId, num);
+        }
+
+        async function executeDeleteOrder(id) {
+            try {
+                playBeep(260, 0.15);
+                const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    if (activeOrderId === id) {
+                        activeOrderId = null;
+                        document.getElementById('order-view').style.display = 'none';
+                        document.getElementById('no-order-selected').style.display = 'block';
+                    }
+                    await fetchQueue();
+                } else {
+                    alert('Помилка при видаленні замовлення з сервера');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Мережева помилка');
+            }
         }
 
         // Initialize mode based on URL or default

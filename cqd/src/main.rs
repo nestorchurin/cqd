@@ -7,7 +7,7 @@ use axum::{
     extract::{Path, State},
     http::{header, HeaderMap, StatusCode},
     response::{IntoResponse, Response},
-    routing::{get, post},
+    routing::{delete, get, post},
     Json, Router,
 };
 use chrono::Utc;
@@ -469,6 +469,21 @@ async fn local_mark_delivered(
     Ok(StatusCode::OK)
 }
 
+async fn local_delete_order(
+    Path(id): Path<String>,
+    State(state): State<SharedState>,
+) -> Result<StatusCode, StatusCode> {
+    let mut lock = state.write().await;
+    if let Some(order) = lock.orders.remove(&id) {
+        lock.token_to_id.remove(&order.token);
+        lock.push_subs.remove(&id);
+        println!("[Order] DELETED order: #{} ({})", order.order_number, id);
+        Ok(StatusCode::OK)
+    } else {
+        Err(StatusCode::NOT_FOUND)
+    }
+}
+
 // Async Web Push Dispatcher
 async fn send_web_push_notifications(
     subs: Vec<PushSubscription>,
@@ -605,6 +620,8 @@ async fn main() {
         .route("/dispatcher", get(local_dispatcher_page))
         .route("/admin", get(local_dispatcher_page))
         .route("/api/admin/orders", get(local_list_orders).post(local_create_order))
+        .route("/api/admin/orders/{id}", delete(local_delete_order))
+        .route("/api/terminal/orders/{id}/delete", post(local_delete_order))
         .route("/api/terminal/orders/{id}/accept", post(local_accept_order))
         .route("/api/terminal/orders/{id}/start-mixing", post(local_start_mixing))
         .route("/api/terminal/orders/{id}/finish-bucket", post(local_finish_bucket))

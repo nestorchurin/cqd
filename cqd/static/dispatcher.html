@@ -461,7 +461,10 @@
                     <td><span class="status-badge status-${o.status}">${o.status}</span></td>
                     <td>${delayHtml}</td>
                     <td>
-                        <a href="/track/${o.token}" target="_blank" class="link-track">TRACK ↗</a>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <a href="/track/${o.token}" target="_blank" class="link-track">TRACK ↗</a>
+                            <button onclick="deleteOrder('${o.id}', '${o.order_number}')" style="background: transparent; border: 1px solid rgba(215, 25, 33, 0.45); color: #d71921; font-family: var(--font-mono); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✕</button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -491,8 +494,20 @@
                 const fullUrl = `https://cqd.yunexal.com/track/${data.token}`;
                 document.getElementById('track-url-display').innerText = fullUrl;
                 document.getElementById('new-order-form').reset();
-                fetchOrders();
+                async function deleteOrder(id, num) {
+            if (!confirm(`Видалити замовлення ${num}?`)) return;
+            const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchOrders();
+        }
+
+        fetchOrders();
             }
+        }
+
+        async function deleteOrder(id, num) {
+            if (!confirm(`Видалити замовлення ${num}?`)) return;
+            const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+            if (res.ok) fetchOrders();
         }
 
         fetchOrders();
