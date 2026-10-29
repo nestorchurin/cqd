@@ -282,7 +282,9 @@
             transition: transform 0.16s var(--ease-touch), border-color 0.16s, box-shadow 0.16s;
             position: relative;
             overflow: hidden;
-            animation: nothingCardIn 0.4s var(--ease-out-nothing) both;
+        }
+        .order-card.card-animate-in {
+            animation: nothingCardIn 0.38s var(--ease-out-nothing) both;
         }
         .order-card:active {
             transform: scale(0.975);
@@ -639,6 +641,8 @@
 
     <script>
         let allOrders = [];
+        let lastOrdersHash = '';
+        const seenTokens = new Set();
 
         function updateClock() {
             const now = new Date();
@@ -664,8 +668,22 @@
             try {
                 const res = await fetch('/api/public/queue');
                 if (res.ok) {
-                    allOrders = await res.json();
-                    renderBoard(allOrders);
+                    const orders = await res.json();
+                    const query = document.getElementById('search-input').value.toLowerCase().trim();
+                    const currentHash = JSON.stringify(orders);
+
+                    if (currentHash === lastOrdersHash && !query) {
+                        return;
+                    }
+
+                    allOrders = orders;
+                    lastOrdersHash = currentHash;
+
+                    if (query) {
+                        filterOrders();
+                    } else {
+                        renderBoard(allOrders);
+                    }
                 }
             } catch (err) {
                 console.error(err);
@@ -692,14 +710,6 @@
             document.getElementById('loading').style.display = 'none';
             document.getElementById('board-content').style.display = 'block';
 
-            const readyList = document.getElementById('ready-list');
-            const workingList = document.getElementById('working-list');
-            const pendingList = document.getElementById('pending-list');
-
-            readyList.innerHTML = '';
-            workingList.innerHTML = '';
-            pendingList.innerHTML = '';
-
             const ready = orders.filter(o => o.status === 'Ready');
             const working = orders.filter(o => o.status === 'Mixing' || o.status === 'Accepted' || o.status === 'Paused');
             const pending = orders.filter(o => o.status === 'Registered' || o.status === 'TechCardPending');
@@ -712,23 +722,44 @@
             document.getElementById('working-badge-count').innerText = `[${working.length}]`;
             document.getElementById('pending-badge-count').innerText = `[${pending.length}]`;
 
-            if (ready.length === 0) {
-                readyList.innerHTML = '<div class="empty-state">НЕМАЄ ЗАМОВЛЕНЬ НА ВИДАЧУ</div>';
-            } else {
-                ready.forEach((o, idx) => readyList.appendChild(createOrderCard(o, true, idx)));
+            syncSection(document.getElementById('ready-list'), ready, true, 'НЕМАЄ ЗАМОВЛЕНЬ НА ВИДАЧУ');
+            syncSection(document.getElementById('working-list'), working, false, 'МІКСЕРИ ВІЛЬНІ');
+            syncSection(document.getElementById('pending-list'), pending, false, 'ЧЕРГА ПОРОЖНЯ');
+        }
+
+        function syncSection(container, listOrders, isReady, emptyText) {
+            if (listOrders.length === 0) {
+                if (!container.querySelector('.empty-state') || container.children.length > 1) {
+                    container.innerHTML = `<div class="empty-state">${emptyText}</div>`;
+                }
+                return;
             }
 
-            if (working.length === 0) {
-                workingList.innerHTML = '<div class="empty-state">МІКСЕРИ ВІЛЬНІ</div>';
-            } else {
-                working.forEach((o, idx) => workingList.appendChild(createOrderCard(o, false, idx)));
-            }
+            const emptyEl = container.querySelector('.empty-state');
+            if (emptyEl) emptyEl.remove();
 
-            if (pending.length === 0) {
-                pendingList.innerHTML = '<div class="empty-state">ЧЕРГА ПОРОЖНЯ</div>';
-            } else {
-                pending.forEach((o, idx) => pendingList.appendChild(createOrderCard(o, false, idx)));
-            }
+            const newTokens = new Set(listOrders.map(o => o.token));
+
+            // Remove cards no longer in this section
+            Array.from(container.children).forEach(child => {
+                const token = child.getAttribute('data-token');
+                if (token && !newTokens.has(token)) {
+                    child.remove();
+                }
+            });
+
+            // Upsert cards in place preserving order
+            listOrders.forEach((o, idx) => {
+                let card = container.querySelector(`[data-token="${o.token}"]`);
+                if (!card) {
+                    card = createOrderCard(o, isReady, idx);
+                } else {
+                    updateOrderCard(card, o, isReady);
+                }
+                if (container.children[idx] !== card) {
+                    container.insertBefore(card, container.children[idx] || null);
+                }
+            });
         }
 
         function formatColor(o) {
@@ -754,8 +785,34 @@
             const a = document.createElement('a');
             a.className = 'order-card' + (isReady ? ' ready-card' : '');
             a.href = `/track/${o.token}`;
-            a.style.animationDelay = `${idx * 0.04}s`;
+            a.setAttribute('data-token', o.token);
 
+            // Animate only once on first arrival
+            if (!seenTokens.has(o.token)) {
+                seenTokens.add(o.token);
+                a.classList.add('card-animate-in');
+                a.style.animationDelay = `${idx * 0.04}s`;
+                setTimeout(() => {
+                    a.classList.remove('card-animate-in');
+                    a.style.animationDelay = '';
+                }, 600);
+            }
+
+            fillCardContent(a, o, isReady);
+            return a;
+        }
+
+        function updateOrderCard(a, o, isReady) {
+            const isCurrentlyReady = a.classList.contains('ready-card');
+            if (isReady && !isCurrentlyReady) {
+                a.classList.add('ready-card');
+            } else if (!isReady && isCurrentlyReady) {
+                a.classList.remove('ready-card');
+            }
+            fillCardContent(a, o, isReady);
+        }
+
+        function fillCardContent(a, o, isReady) {
             let statusLabel = o.status;
             let badgeClass = 'status-badge';
             let beaconHtml = '';
@@ -786,7 +843,7 @@
 
             const microDots = renderMicroDots(o.buckets_completed, o.total_buckets, o.status === 'Mixing');
 
-            a.innerHTML = `
+            const newContent = `
                 <div class="card-top">
                     <div class="card-num-box">
                         <span class="card-num">${o.order_number}</span>
@@ -815,7 +872,10 @@
                     <span class="arrow-glyph">ВІДКРИТИ ↗</span>
                 </div>
             `;
-            return a;
+
+            if (a.innerHTML !== newContent) {
+                a.innerHTML = newContent;
+            }
         }
 
         fetchQueue();
