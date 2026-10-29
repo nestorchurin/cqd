@@ -1492,29 +1492,6 @@
             }
         }
 
-            const res = await fetch('/api/admin/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                const created = await res.json();
-                document.getElementById('create-success-box').style.display = 'block';
-                document.getElementById('create-track-url').innerText = `https://cqd.yunexal.com/track/${created.token}`;
-
-                setTimeout(() => {
-                    document.getElementById('create-success-box').style.display = 'none';
-                    document.getElementById('create-order-number').value = '';
-                    document.getElementById('create-client-name').value = '';
-                    document.getElementById('create-color-code').value = '';
-                    fetchQueue();
-                    selectOrder(created.id);
-                    switchMode('workshop');
-                }, 1200);
-            }
-        }
-
         async function acceptOrder() {
             playBeep(660, 0.1);
             await fetch(`/api/terminal/orders/${activeOrderId}/accept`, { method: 'POST' });
