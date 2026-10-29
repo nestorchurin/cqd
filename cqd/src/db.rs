@@ -49,6 +49,7 @@ pub fn init_db(db_path: &str) -> Result<(Connection, Vec<u8>, String)> {
             order_number TEXT NOT NULL,
             client_name TEXT NOT NULL,
             material TEXT NOT NULL,
+            collection TEXT,
             color_code TEXT NOT NULL,
             base TEXT,
             total_buckets INTEGER NOT NULL,
@@ -93,6 +94,9 @@ pub fn init_db(db_path: &str) -> Result<(Connection, Vec<u8>, String)> {
             value TEXT NOT NULL
         );"
     )?;
+
+    // Safe migration: add collection column if table already exists
+    let _ = conn.execute("ALTER TABLE orders ADD COLUMN collection TEXT", []);
 
     // 1. Get or generate signing secret
     let secret_res: Result<String> = conn.query_row(
@@ -206,13 +210,14 @@ pub fn create_order_with_event(
 
 pub fn insert_order(conn: &mut Connection, order: &Order) -> Result<()> {
     conn.execute(
-        "INSERT INTO orders (id, order_number, client_name, material, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)",
+        "INSERT INTO orders (id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)",
         params![
             order.id,
             order.order_number,
             order.client_name,
             order.material,
+            order.collection,
             order.color_code,
             order.base,
             order.total_buckets,
@@ -289,34 +294,35 @@ pub fn delete_order(conn: &mut Connection, id: &str) -> Result<()> {
 
 pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
     let mut stmt = conn.prepare(
-        "SELECT id, order_number, client_name, material, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
+        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
          FROM orders WHERE is_archived = 0 ORDER BY created_at DESC"
     )?;
 
     let order_iter = stmt.query_map([], |row| {
         let id: String = row.get(0)?;
-        let status_str: String = row.get(9)?;
-        let is_archived_int: i32 = row.get(18)?;
+        let status_str: String = row.get(10)?;
+        let is_archived_int: i32 = row.get(19)?;
 
         Ok(Order {
             id,
             order_number: row.get(1)?,
             client_name: row.get(2)?,
             material: row.get(3)?,
-            color_code: row.get(4)?,
-            base: row.get(5)?,
-            total_buckets: row.get(6)?,
-            bucket_weight: row.get(7)?,
-            buckets_completed: row.get(8)?,
+            collection: row.get(4)?,
+            color_code: row.get(5)?,
+            base: row.get(6)?,
+            total_buckets: row.get(7)?,
+            bucket_weight: row.get(8)?,
+            buckets_completed: row.get(9)?,
             status: OrderStatus::from_str(&status_str),
-            delay_reason: row.get(10)?,
-            token: row.get(11)?,
-            created_at: row.get(12)?,
-            accepted_at: row.get(13)?,
-            mixing_started_at: row.get(14)?,
-            mixing_duration_secs: row.get(15)?,
-            ready_at: row.get(16)?,
-            delivered_at: row.get(17)?,
+            delay_reason: row.get(11)?,
+            token: row.get(12)?,
+            created_at: row.get(13)?,
+            accepted_at: row.get(14)?,
+            mixing_started_at: row.get(15)?,
+            mixing_duration_secs: row.get(16)?,
+            ready_at: row.get(17)?,
+            delivered_at: row.get(18)?,
             is_archived: is_archived_int == 1,
             events: vec![],
         })
@@ -325,7 +331,6 @@ pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
     let mut map = HashMap::new();
     for o_res in order_iter {
         let mut order = o_res?;
-        // Load events for this order
         order.events = load_events_for_order(conn, &order.id)?;
         map.insert(order.id.clone(), order);
     }
@@ -335,34 +340,35 @@ pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
 
 pub fn load_archived_orders(conn: &Connection, limit: usize) -> Result<Vec<Order>> {
     let mut stmt = conn.prepare(
-        "SELECT id, order_number, client_name, material, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
+        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
          FROM orders WHERE is_archived = 1 ORDER BY delivered_at DESC LIMIT ?1"
     )?;
 
     let order_iter = stmt.query_map(params![limit as i64], |row| {
         let id: String = row.get(0)?;
-        let status_str: String = row.get(9)?;
-        let is_archived_int: i32 = row.get(18)?;
+        let status_str: String = row.get(10)?;
+        let is_archived_int: i32 = row.get(19)?;
 
         Ok(Order {
             id,
             order_number: row.get(1)?,
             client_name: row.get(2)?,
             material: row.get(3)?,
-            color_code: row.get(4)?,
-            base: row.get(5)?,
-            total_buckets: row.get(6)?,
-            bucket_weight: row.get(7)?,
-            buckets_completed: row.get(8)?,
+            collection: row.get(4)?,
+            color_code: row.get(5)?,
+            base: row.get(6)?,
+            total_buckets: row.get(7)?,
+            bucket_weight: row.get(8)?,
+            buckets_completed: row.get(9)?,
             status: OrderStatus::from_str(&status_str),
-            delay_reason: row.get(10)?,
-            token: row.get(11)?,
-            created_at: row.get(12)?,
-            accepted_at: row.get(13)?,
-            mixing_started_at: row.get(14)?,
-            mixing_duration_secs: row.get(15)?,
-            ready_at: row.get(16)?,
-            delivered_at: row.get(17)?,
+            delay_reason: row.get(11)?,
+            token: row.get(12)?,
+            created_at: row.get(13)?,
+            accepted_at: row.get(14)?,
+            mixing_started_at: row.get(15)?,
+            mixing_duration_secs: row.get(16)?,
+            ready_at: row.get(17)?,
+            delivered_at: row.get(18)?,
             is_archived: is_archived_int == 1,
             events: vec![],
         })

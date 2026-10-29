@@ -75,6 +75,7 @@ pub struct Order {
     pub order_number: String,
     pub client_name: String,
     pub material: String,
+    pub collection: Option<String>,
     pub color_code: String,
     pub base: Option<String>,
     pub total_buckets: u32,
@@ -112,6 +113,7 @@ pub struct CreateOrderRequest {
     pub material: String,
     pub total_buckets: u32,
     pub bucket_weight: String,
+    pub collection: Option<String>,
     pub color_code: Option<String>,
     pub base: Option<String>,
 }
@@ -459,11 +461,17 @@ async fn local_create_order(
         _ => "Стандарт".to_string(),
     };
 
+    let final_collection = req.collection.and_then(|s| {
+        let t = s.trim().to_string();
+        if t.is_empty() { None } else { Some(t) }
+    });
+
     let order = Order {
         id: id.clone(),
         order_number: final_order_number.clone(),
         client_name: final_client_name,
         material: req.material,
+        collection: final_collection,
         color_code: final_color_code,
         base: req.base,
         total_buckets: req.total_buckets,
@@ -595,6 +603,42 @@ async fn local_finish_bucket(
 
     let details = format!("Відро {}/{} завершено", new_completed, total_buckets);
     let event = lock.record_event(&id, "BucketFinished", "Гіроміксер", Some(&details))?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::update_order_buckets(&mut db_conn, &id, new_completed, &new_status)
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    let order = lock.orders.get_mut(&id).unwrap();
+    order.buckets_completed = new_completed;
+    order.status = new_status;
+    order.events.push(event);
+
+    Ok(StatusCode::OK)
+}
+
+async fn local_decrement_bucket(
+    Path(id): Path<String>,
+    State(state): State<SharedState>,
+) -> Result<StatusCode, StatusCode> {
+    let mut lock = state.write().await;
+    let (new_completed, total_buckets) = {
+        let order = lock.orders.get(&id).ok_or(StatusCode::NOT_FOUND)?;
+        if order.buckets_completed == 0 {
+            return Ok(StatusCode::OK);
+        }
+        (order.buckets_completed - 1, order.total_buckets)
+    };
+
+    let new_status = if new_completed == 0 {
+        OrderStatus::Accepted
+    } else {
+        OrderStatus::Mixing
+    };
+
+    let details = format!("Відкат відра: {}/{}", new_completed, total_buckets);
+    let event = lock.record_event(&id, "BucketRollback", "Цех", Some(&details))?;
 
     {
         let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -922,6 +966,7 @@ async fn main() {
         .route("/api/terminal/orders/{id}/accept", post(local_accept_order))
         .route("/api/terminal/orders/{id}/start-mixing", post(local_start_mixing))
         .route("/api/terminal/orders/{id}/finish-bucket", post(local_finish_bucket))
+        .route("/api/terminal/orders/{id}/decrement-bucket", post(local_decrement_bucket))
         .route("/api/terminal/orders/{id}/pause", post(local_pause_order))
         .route("/api/terminal/orders/{id}/resume", post(local_resume_order))
         .route("/api/terminal/orders/{id}/ready", post(local_mark_ready))

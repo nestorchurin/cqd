@@ -428,7 +428,7 @@
             document.getElementById('order-num').innerText = data.order_number;
             document.getElementById('order-client').innerText = data.client_name;
             document.getElementById('order-material').innerText = data.material;
-            document.getElementById('order-color').innerText = data.color_code;
+            document.getElementById('order-color').innerText = (data.collection ? data.collection + ' ' : '') + data.color_code;
             document.getElementById('order-base').innerText = data.base || 'БАЗА A';
             document.getElementById('order-buckets').innerText = `${data.buckets_completed} / ${data.total_buckets}`;
             document.getElementById('order-weight').innerText = data.bucket_weight;
