@@ -186,6 +186,10 @@
             font-weight: 800;
             letter-spacing: 1px;
             color: #ffffff;
+            white-space: nowrap;
+            max-width: 140px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .chip-sub {
             font-family: var(--font-mono);
@@ -234,11 +238,12 @@
         }
         .hero-num {
             font-family: var(--font-dot);
-            font-size: 2.8rem;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
             font-weight: 900;
             letter-spacing: 2px;
             color: #ffffff;
-            line-height: 1;
+            line-height: 1.1;
+            word-break: break-word;
         }
         .hero-status-pill {
             font-family: var(--font-mono);
@@ -780,7 +785,7 @@
                 <!-- Hero Order Card -->
                 <div class="active-hero">
                     <div class="hero-top-row">
-                        <div id="hero-num" class="hero-num">#0000</div>
+                        <div id="hero-num" class="hero-num">—</div>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <div id="hero-status-pill" class="hero-status-pill">PENDING</div>
                             <button id="hero-delete-btn" class="btn-delete-chip" onclick="deleteActiveOrder()" title="Видалити це замовлення">✕ ВИДАЛИТИ</button>
@@ -980,7 +985,7 @@
 
                 <form onsubmit="handleCreateOrder(event)">
                     <div class="form-field">
-                        <label class="form-label">КЛІЄНТ / ВОДІЙ <span style="color: var(--text-muted); font-size: 0.65rem; font-weight: normal;">(ЗА БАЖАННЯМ)</span></label>
+                        <label class="form-label">КЛІЄНТ <span style="color: var(--text-muted); font-size: 0.65rem; font-weight: normal;">(ЗА БАЖАННЯМ)</span></label>
                         <input type="text" id="create-client-name" class="form-input" placeholder="Клієнт (наприклад: Лац, БудСервіс)">
                     </div>
 
@@ -1184,8 +1189,7 @@
         function renderArchive(filterQuery = '') {
             const filtered = archivedOrders.filter(o => {
                 if (!filterQuery) return true;
-                return o.order_number.toLowerCase().includes(filterQuery) ||
-                       o.client_name.toLowerCase().includes(filterQuery) ||
+                return o.client_name.toLowerCase().includes(filterQuery) ||
                        o.material.toLowerCase().includes(filterQuery) ||
                        (o.collection && o.collection.toLowerCase().includes(filterQuery)) ||
                        (o.color_code && o.color_code.toLowerCase().includes(filterQuery));
@@ -1244,12 +1248,12 @@
                 card.innerHTML = `
                     <div class="disp-top-row">
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <span class="disp-order-num">${o.order_number}</span>
+                            <span class="disp-order-num">${o.client_name}</span>
                             ${baseBadge}
                         </div>
                         <div style="display: flex; gap: 6px; align-items: center;">
                             <span class="hero-status-pill working">ВИДАНО</span>
-                            <button class="btn-delete-chip" onclick="deleteArchivedOrder('${o.id}', '${o.order_number}')" title="Видалити з архіву">✕ ВИДАЛИТИ</button>
+                            <button class="btn-delete-chip" onclick="deleteArchivedOrder('${o.id}', '${o.client_name}')" title="Видалити з архіву">✕ ВИДАЛИТИ</button>
                         </div>
                     </div>
                     <div style="font-size: 1rem; font-weight: 700; color: #fff;">${o.material}</div>
@@ -1362,7 +1366,7 @@
                 let baseTag = order.base ? order.base.replace('База ', '').trim() : '';
 
                 chip.innerHTML = `
-                    <span class="chip-num">${order.order_number}</span>
+                    <span class="chip-num">${order.client_name}</span>
                     <span class="chip-sub">${baseTag ? baseTag + ' · ' : ''}${shortStatus}</span>
                 `;
                 strip.appendChild(chip);
@@ -1383,7 +1387,7 @@
             document.getElementById('no-order-selected').style.display = 'none';
             document.getElementById('order-view').style.display = 'flex';
 
-            document.getElementById('hero-num').innerText = o.order_number;
+            document.getElementById('hero-num').innerText = o.client_name;
             document.getElementById('hero-client').innerText = o.client_name;
             document.getElementById('hero-material').innerText = o.material;
             document.getElementById('hero-color').innerText = formatColor(o);
@@ -1497,20 +1501,20 @@
                 card.innerHTML = `
                     <div class="disp-top-row">
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <span class="disp-order-num">${o.order_number}</span>
+                            <span class="disp-order-num">${o.client_name}</span>
                             ${baseBadge}
                         </div>
                         <span class="hero-status-pill">${o.status}</span>
                     </div>
                     <div style="font-size: 1rem; font-weight: 700; color: #fff;">${o.material}</div>
                     <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                        ${o.client_name} // <strong style="color: #fff;">${formatColor(o)}</strong> • <em>${o.bucket_weight}</em>
+                        <strong style="color: #fff;">${formatColor(o)}</strong> • <em>${o.bucket_weight}</em>
                     </div>
                     <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff; margin-top: 6px;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
                     <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
                         <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ КЛІЄНТА ↗</a>
                         <div style="display: flex; gap: 8px; align-items: center;">
-                            <button onclick="confirmDeleteOrder('${o.id}', '${o.order_number}');" class="btn-delete-chip" style="padding: 4px 10px; font-size: 0.7rem;">ВИДАЛИТИ ✕</button>
+                            <button onclick="confirmDeleteOrder('${o.id}', '${o.client_name}');" class="btn-delete-chip" style="padding: 4px 10px; font-size: 0.7rem;">ВИДАЛИТИ ✕</button>
                             <span onclick="selectOrder('${o.id}'); switchMode('workshop');" style="font-family: var(--font-mono); font-size: 0.72rem; color: #fff; cursor: pointer; padding: 4px 10px; background: rgba(255, 255, 255, 0.1); border-radius: 999px;">В ЦЕХ ➔</span>
                         </div>
                     </div>
@@ -1818,8 +1822,8 @@
         async function deleteActiveOrder() {
             if (!activeOrderId) return;
             const current = orders.find(o => o.id === activeOrderId);
-            const num = current ? current.order_number : `#${activeOrderId}`;
-            await confirmDeleteOrder(activeOrderId, num);
+            const title = current ? current.client_name : `Замовлення`;
+            await confirmDeleteOrder(activeOrderId, title);
         }
 
         async function executeDeleteOrder(id) {

@@ -409,7 +409,7 @@ async fn local_next_order_number(
 }
 
 async fn local_scan_recipe(
-    State(state): State<SharedState>,
+    State(_state): State<SharedState>,
     body: axum::body::Bytes,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let temp_img_path = "/tmp/cqd_scan_input.jpg";
@@ -438,16 +438,8 @@ async fn local_scan_recipe(
         })
     });
 
-    let lock = state.read().await;
-    let next_num = if let Ok(db_conn) = lock.db.lock() {
-        get_next_order_number(&db_conn)
-    } else {
-        "#1044".to_string()
-    };
-
     Ok(Json(serde_json::json!({
         "success": true,
-        "order_number": next_num,
         "data": parsed
     })))
 }
@@ -470,10 +462,7 @@ async fn local_create_order(
                 format!("#{}", t)
             }
         }
-        _ => {
-            let db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-            get_next_order_number(&db_conn)
-        }
+        _ => String::new(),
     };
 
     let final_client_name = match req.client_name {
@@ -494,7 +483,7 @@ async fn local_create_order(
     let order = Order {
         id: id.clone(),
         order_number: final_order_number.clone(),
-        client_name: final_client_name,
+        client_name: final_client_name.clone(),
         material: req.material,
         collection: final_collection,
         color_code: final_color_code,
@@ -518,12 +507,12 @@ async fn local_create_order(
     let persisted_order = lock.create_order(
         order,
         "Офіс",
-        Some(&format!("Накладна {}", final_order_number)),
+        Some(&format!("Замовлення для {}", final_client_name)),
     )?;
 
     lock.token_to_id.insert(token, id.clone());
     lock.orders.insert(id, persisted_order.clone());
-    println!("[Order] Created & Persisted to SQLite: #{} ({})", persisted_order.order_number, persisted_order.id);
+    println!("[Order] Created & Persisted to SQLite: {} ({})", persisted_order.client_name, persisted_order.id);
     Ok(Json(persisted_order))
 }
 
@@ -735,11 +724,11 @@ async fn local_mark_ready(
     Path(id): Path<String>,
     State(state): State<SharedState>,
 ) -> Result<StatusCode, StatusCode> {
-    let (subs, order_num, material, buckets) = {
+    let (subs, client_name, material, buckets) = {
         let mut lock = state.write().await;
-        let (order_num, material, buckets) = {
+        let (client_name, material, buckets) = {
             let order = lock.orders.get(&id).ok_or(StatusCode::NOT_FOUND)?;
-            (order.order_number.clone(), order.material.clone(), order.total_buckets)
+            (order.client_name.clone(), order.material.clone(), order.total_buckets)
         };
         let now = Utc::now().timestamp_millis();
 
@@ -770,10 +759,10 @@ async fn local_mark_ready(
         order.ready_at = Some(now);
         order.events.push(event);
 
-        (subs, order_num, material, buckets)
+        (subs, client_name, material, buckets)
     };
 
-    println!("[Order] READY FOR PICKUP: #{}", order_num);
+    println!("[Order] READY FOR PICKUP: {}", client_name);
 
     // Asynchronously dispatch Web Push notifications
     if !subs.is_empty() {
@@ -783,7 +772,7 @@ async fn local_mark_ready(
                 let lock = state_clone.read().await;
                 (lock.vapid_private_key.clone(), lock.vapid_public_key.clone())
             };
-            send_web_push_notifications(subs, order_num, material, buckets, priv_key, pub_key).await;
+            send_web_push_notifications(subs, client_name, material, buckets, priv_key, pub_key).await;
         });
     }
 
@@ -858,7 +847,7 @@ async fn local_delete_order(
 // Async Web Push Dispatcher
 async fn send_web_push_notifications(
     subs: Vec<PushSubscription>,
-    order_number: String,
+    client_name: String,
     material: String,
     buckets: u32,
     private_key: String,
@@ -868,9 +857,10 @@ async fn send_web_push_notifications(
 
     println!("[WebPush] Dispatching notifications to {} client(s)...", subs.len());
 
+    let client_part = if client_name.trim().is_empty() { String::new() } else { format!(" для {}", client_name.trim()) };
     let payload = serde_json::json!({
         "title": "Ceresit Колірувальний Цех",
-        "body": format!("Ваше замовлення {} ({} відер {}) заколіровано та готове до завантаження на рампі! 🪣", order_number, buckets, material),
+        "body": format!("Замовлення{} ({} відер {}) заколіровано та готове до завантаження на рампі! 🪣", client_part, buckets, material),
         "url": "/"
     }).to_string();
 

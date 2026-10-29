@@ -296,10 +296,6 @@
             <div class="panel-title">REGISTER BATCH</div>
             <form id="new-order-form" onsubmit="createOrder(event)">
                 <div class="form-group">
-                    <label>WAYBILL / ORDER NUMBER</label>
-                    <input type="text" id="order_number" placeholder="#1042" required>
-                </div>
-                <div class="form-group">
                     <label>CLIENT NAME</label>
                     <input type="text" id="client_name" placeholder="БудСервіс (Василь)" required>
                 </div>
@@ -348,7 +344,6 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ORDER</th>
                             <th>CLIENT</th>
                             <th>MATERIAL</th>
                             <th>PROGRESS</th>
@@ -414,8 +409,7 @@
                 const tr = document.createElement('tr');
 
                 tr.innerHTML = `
-                    <td><strong style="font-family: var(--font-dot); font-size: 1.15rem; letter-spacing: 1px;">${o.order_number}</strong></td>
-                    <td>${o.client_name}</td>
+                    <td><strong style="font-family: var(--font-dot); font-size: 1.15rem; letter-spacing: 1px;">${o.client_name}</strong></td>
                     <td>
                         <div>${o.material}</div>
                         <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${o.color_code}</div>
@@ -425,7 +419,7 @@
                     <td>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <a href="/track/${o.token}" target="_blank" class="link-track">TRACK ↗</a>
-                            <button onclick="deleteOrder('${o.id}', '${o.order_number}')" style="background: transparent; border: 1px solid rgba(215, 25, 33, 0.45); color: #d71921; font-family: var(--font-mono); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✕</button>
+                            <button onclick="deleteOrder('${o.id}', '${o.client_name}')" style="background: transparent; border: 1px solid rgba(215, 25, 33, 0.45); color: #d71921; font-family: var(--font-mono); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✕</button>
                         </div>
                     </td>
                 `;
@@ -436,7 +430,6 @@
         async function createOrder(e) {
             e.preventDefault();
             const payload = {
-                order_number: document.getElementById('order_number').value,
                 client_name: document.getElementById('client_name').value,
                 material: document.getElementById('material').value,
                 total_buckets: parseInt(document.getElementById('total_buckets').value),

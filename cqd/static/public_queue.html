@@ -319,11 +319,13 @@
         }
         .card-num {
             font-family: var(--font-dot);
-            font-size: 1.85rem;
+            font-size: clamp(1.2rem, 3.5vw, 1.85rem);
             font-weight: 900;
             letter-spacing: 1.5px;
             color: #ffffff;
             text-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
+            word-break: break-word;
+            max-width: 280px;
         }
         .ready-beacon {
             width: 7px;
@@ -606,7 +608,7 @@
         <!-- Search Input Widget -->
         <div class="search-box">
             <span class="search-icon">🔍</span>
-            <input type="text" id="search-input" class="search-input" placeholder="ПОШУК ЗА НАКЛАДНОЮ ЧИ КЛІЄНТОМ..." oninput="filterOrders()">
+            <input type="text" id="search-input" class="search-input" placeholder="ПОШУК ЗА КЛІЄНТОМ ЧИ МАТЕРІАЛОМ..." oninput="filterOrders()">
         </div>
 
         <!-- Loading State -->
@@ -697,7 +699,6 @@
                 return;
             }
             const filtered = allOrders.filter(o => 
-                (o.order_number && o.order_number.toLowerCase().includes(query)) ||
                 (o.client_name && o.client_name.toLowerCase().includes(query)) ||
                 (o.material && o.material.toLowerCase().includes(query)) ||
                 (o.collection && o.collection.toLowerCase().includes(query)) ||
@@ -846,7 +847,7 @@
             const newContent = `
                 <div class="card-top">
                     <div class="card-num-box">
-                        <span class="card-num">${o.order_number}</span>
+                        <span class="card-num">${o.client_name}</span>
                         ${baseBadge}
                         ${beaconHtml}
                     </div>
@@ -856,8 +857,6 @@
                     <div>
                         <div class="card-mat">${o.material}</div>
                         <div class="card-subinfo">
-                            <span>${o.client_name}</span>
-                            <span>//</span>
                             <span class="color-val">${formatColor(o)}</span>
                         </div>
                     </div>
