@@ -512,13 +512,19 @@
                 btn.innerHTML = '<span>NOTIFICATIONS ACTIVE</span>';
             } catch (err) {
                 console.error('Push error:', err);
-                alert('Push error: ' + err.message);
+                const btn = document.getElementById('push-btn');
+                if (btn) {
+                    btn.innerHTML = '<span>PUSH UNAVAILABLE</span>';
+                }
+                alert('Помилка активації Push-сповіщень: ' + (err.message || err));
             }
         }
 
         function urlB64ToUint8Array(base64String) {
-            const padding = '='.repeat((4 - base64String.length % 4) % 4);
-            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            if (!base64String) return new Uint8Array(0);
+            const clean = base64String.replace(/=/g, '');
+            const padding = '='.repeat((4 - clean.length % 4) % 4);
+            const base64 = (clean + padding).replace(/\-/g, '+').replace(/_/g, '/');
             const rawData = window.atob(base64);
             const outputArray = new Uint8Array(rawData.length);
             for (let i = 0; i < rawData.length; ++i) {

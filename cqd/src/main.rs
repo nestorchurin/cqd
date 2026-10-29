@@ -283,10 +283,24 @@ async fn public_get_order(
     State(state): State<SharedState>,
 ) -> Result<Json<serde_json::Value>, StatusCode> {
     let lock = state.read().await;
-    let order_id = lock.token_to_id.get(&token).ok_or(StatusCode::NOT_FOUND)?;
-    let order = lock.orders.get(order_id).ok_or(StatusCode::NOT_FOUND)?;
+    let order = if let Some(order_id) = lock.token_to_id.get(&token) {
+        lock.orders.get(order_id).cloned()
+    } else {
+        None
+    };
 
-    let mut val = serde_json::to_value(order).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let order = match order {
+        Some(o) => o,
+        None => {
+            let db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            match db::load_order_by_token(&db_conn, &token) {
+                Ok(Some(o)) => o,
+                _ => return Err(StatusCode::NOT_FOUND),
+            }
+        }
+    };
+
+    let mut val = serde_json::to_value(&order).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     if let Some(obj) = val.as_object_mut() {
         obj.insert(
             "vapid_public_key".to_string(),
@@ -302,14 +316,23 @@ async fn public_subscribe_push(
     Json(sub): Json<PushSubscription>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order_id = lock.token_to_id.get(&token).cloned().ok_or(StatusCode::NOT_FOUND)?;
+    let order_id = if let Some(oid) = lock.token_to_id.get(&token) {
+        oid.clone()
+    } else {
+        let db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        match db::load_order_by_token(&db_conn, &token) {
+            Ok(Some(o)) => o.id,
+            _ => return Err(StatusCode::NOT_FOUND),
+        }
+    };
 
     {
         let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         let _ = db::save_push_subscription(&mut db_conn, &order_id, &sub);
     }
 
-    lock.push_subs.entry(order_id).or_default().push(sub);
+    lock.push_subs.entry(order_id.clone()).or_default().push(sub);
+    lock.token_to_id.insert(token, order_id);
     Ok(StatusCode::OK)
 }
 
@@ -916,12 +939,12 @@ async fn main() {
         push_subs.len()
     );
 
-    // Generate or use VAPID keys
+    // Generate or use VAPID keys (ECDSA P-256 standard for Web Push)
     let vapid_public_key = std::env::var("VAPID_PUBLIC_KEY").unwrap_or_else(|_| {
-        "BCg27wQn0kUjA6w031uL3oOvdT64g_lD4w82tF1sI0_eY2QoR2e_4o9M7w9K1yX2m4Q4U4y2k4u8u4_k2=".to_string()
+        "BMjQIp55pdbU8pfCBKyXcZjlmER_mXt5LqNrN1hrXbdBS5EnhIbMu3Au-RV53iIpztzNXkGI56BFB1udQ8Bq_H4".to_string()
     });
     let vapid_private_key = std::env::var("VAPID_PRIVATE_KEY").unwrap_or_else(|_| {
-        "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQg...".to_string()
+        "IQ9Ur0ykXoHS9gzfYX0aBjy9lvdrjx_PFUXmie9YRcY".to_string()
     });
 
     let state: SharedState = Arc::new(RwLock::new(AppState {
