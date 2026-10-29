@@ -566,41 +566,6 @@ async fn main() {
         vapid_private_key,
     }));
 
-    // Seed sample demo order
-    {
-        let mut lock = state.write().await;
-        let demo_id = Uuid::new_v4().to_string();
-        let demo_token = "demo1042".to_string();
-        let now = Utc::now().timestamp_millis();
-        lock.token_to_id.insert(demo_token.clone(), demo_id.clone());
-        lock.orders.insert(demo_id.clone(), Order {
-            id: demo_id,
-            order_number: "#1042".to_string(),
-            client_name: "ТОВ БудСервіс / Водій Василь".to_string(),
-            material: "Ceresit CT 174 (1.5mm)".to_string(),
-            color_code: "Nebraska 3".to_string(),
-            base: Some("База B".to_string()),
-            total_buckets: 5,
-            bucket_weight: "25 кг".to_string(),
-            buckets_completed: 0,
-            status: OrderStatus::TechCardPending,
-            delay_reason: None,
-            token: demo_token,
-            created_at: now - (18 * 60 * 1000), // created 18 mins ago to demonstrate office delay alert!
-            accepted_at: None,
-            mixing_started_at: None,
-            mixing_duration_secs: None,
-            ready_at: None,
-            delivered_at: None,
-            events: vec![OrderEvent {
-                timestamp: now - (18 * 60 * 1000),
-                event_type: "CreatedInOffice".to_string(),
-                actor: "Офіс".to_string(),
-                details: Some("Виписано накладну #1042".to_string()),
-            }],
-        });
-    }
-
     // ----------------------------------------------------
     // 1. PUBLIC ROUTER (Port 8080: Cloudflare Tunnel ONLY)
     // ----------------------------------------------------

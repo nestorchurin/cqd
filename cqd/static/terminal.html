@@ -1171,10 +1171,25 @@
                     renderDispatcherMetrics();
                     if (activeOrderId) {
                         const updated = orders.find(o => o.id === activeOrderId);
-                        if (updated) renderActiveOrder(updated);
+                        if (updated && updated.status !== 'Delivered') {
+                            renderActiveOrder(updated);
+                        } else {
+                            activeOrderId = null;
+                            document.getElementById('order-view').style.display = 'none';
+                            document.getElementById('no-order-selected').style.display = 'block';
+                        }
                     } else if (orders.length > 0) {
                         const firstActive = orders.find(o => o.status !== 'Delivered');
-                        if (firstActive) selectOrder(firstActive.id);
+                        if (firstActive) {
+                            selectOrder(firstActive.id);
+                        } else {
+                            document.getElementById('order-view').style.display = 'none';
+                            document.getElementById('no-order-selected').style.display = 'block';
+                        }
+                    } else {
+                        activeOrderId = null;
+                        document.getElementById('order-view').style.display = 'none';
+                        document.getElementById('no-order-selected').style.display = 'block';
                     }
                 }
             } catch (err) {
@@ -1188,6 +1203,10 @@
 
             const strip = document.getElementById('queue-strip');
             strip.innerHTML = '';
+            if (activeOrders.length === 0) {
+                strip.innerHTML = '<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); padding: 8px 12px; white-space: nowrap;">ЧЕРГА ПОРОЖНЯ</div>';
+                return;
+            }
             activeOrders.forEach(order => {
                 const chip = document.createElement('div');
                 chip.className = 'chip-order' + (order.id === activeOrderId ? ' active' : '');
@@ -1328,6 +1347,11 @@
             const list = document.getElementById('disp-orders-list');
             list.innerHTML = '';
             const now = Date.now();
+
+            if (orders.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 32px 16px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--border-dim); border-radius: 20px;">НЕМАЄ ЗАМОВЛЕНЬ У БАЗІ<br><span style="font-size: 0.72rem; margin-top: 6px; display: inline-block;">Створіть накладну у вкладці [+ НОВЕ]</span></div>';
+                return;
+            }
 
             orders.forEach(o => {
                 const card = document.createElement('div');
