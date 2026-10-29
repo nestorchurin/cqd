@@ -107,12 +107,12 @@ pub struct PushSubscription {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateOrderRequest {
-    pub order_number: String,
-    pub client_name: String,
+    pub order_number: Option<String>,
+    pub client_name: Option<String>,
     pub material: String,
     pub total_buckets: u32,
     pub bucket_weight: String,
-    pub color_code: String,
+    pub color_code: Option<String>,
     pub base: Option<String>,
 }
 
@@ -355,6 +355,76 @@ async fn local_get_archive(State(state): State<SharedState>) -> Result<Json<Vec<
     Ok(Json(archived))
 }
 
+fn get_next_order_number(conn: &rusqlite::Connection) -> String {
+    let mut max_num = 1040;
+    if let Ok(mut stmt) = conn.prepare("SELECT order_number FROM orders") {
+        if let Ok(rows) = stmt.query_map([], |row| row.get::<_, String>(0)) {
+            for r in rows.flatten() {
+                let clean = r.trim().trim_start_matches('#');
+                if let Ok(n) = clean.parse::<u64>() {
+                    if n > max_num {
+                        max_num = n;
+                    }
+                }
+            }
+        }
+    }
+    format!("#{}", max_num + 1)
+}
+
+async fn local_next_order_number(
+    State(state): State<SharedState>,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    let lock = state.read().await;
+    let db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let next_num = get_next_order_number(&db_conn);
+    Ok(Json(serde_json::json!({ "next_order_number": next_num })))
+}
+
+async fn local_scan_recipe(
+    State(state): State<SharedState>,
+    body: axum::body::Bytes,
+) -> Result<Json<serde_json::Value>, StatusCode> {
+    let temp_img_path = "/tmp/cqd_scan_input.jpg";
+    if let Err(e) = std::fs::write(temp_img_path, &body) {
+        eprintln!("[Scan Error] Failed to write scan input: {:?}", e);
+        return Err(StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    let ocr_script = "/usr/local/bin/cqd-ocr.py";
+    let output = std::process::Command::new(ocr_script)
+        .arg(temp_img_path)
+        .output()
+        .map_err(|e| {
+            eprintln!("[Scan Error] Failed to execute ocr script: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+    let parsed: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap_or_else(|_| {
+        serde_json::json!({
+            "client_name": "",
+            "material": "Ceresit CT 174 (1.5mm) Камінцева",
+            "color_code": "",
+            "base": "База A",
+            "bucket_weight": "25 кг",
+            "total_buckets": 1
+        })
+    });
+
+    let lock = state.read().await;
+    let next_num = if let Ok(db_conn) = lock.db.lock() {
+        get_next_order_number(&db_conn)
+    } else {
+        "#1044".to_string()
+    };
+
+    Ok(Json(serde_json::json!({
+        "success": true,
+        "order_number": next_num,
+        "data": parsed
+    })))
+}
+
 async fn local_create_order(
     State(state): State<SharedState>,
     Json(req): Json<CreateOrderRequest>,
@@ -364,12 +434,37 @@ async fn local_create_order(
     let token = Uuid::new_v4().simple().to_string();
     let now = Utc::now().timestamp_millis();
 
+    let final_order_number = match req.order_number {
+        Some(ref s) if !s.trim().is_empty() => {
+            let t = s.trim();
+            if t.starts_with('#') {
+                t.to_string()
+            } else {
+                format!("#{}", t)
+            }
+        }
+        _ => {
+            let db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            get_next_order_number(&db_conn)
+        }
+    };
+
+    let final_client_name = match req.client_name {
+        Some(s) if !s.trim().is_empty() => s.trim().to_string(),
+        _ => "Клієнт (Самовивіз)".to_string(),
+    };
+
+    let final_color_code = match req.color_code {
+        Some(s) if !s.trim().is_empty() => s.trim().to_string(),
+        _ => "Стандарт".to_string(),
+    };
+
     let order = Order {
         id: id.clone(),
-        order_number: req.order_number.clone(),
-        client_name: req.client_name,
+        order_number: final_order_number.clone(),
+        client_name: final_client_name,
         material: req.material,
-        color_code: req.color_code,
+        color_code: final_color_code,
         base: req.base,
         total_buckets: req.total_buckets,
         bucket_weight: req.bucket_weight,
@@ -390,7 +485,7 @@ async fn local_create_order(
     let persisted_order = lock.create_order(
         order,
         "Офіс",
-        Some(&format!("Накладна {}", req.order_number)),
+        Some(&format!("Накладна {}", final_order_number)),
     )?;
 
     lock.token_to_id.insert(token, id.clone());
@@ -831,6 +926,8 @@ async fn main() {
         .route("/api/terminal/orders/{id}/resume", post(local_resume_order))
         .route("/api/terminal/orders/{id}/ready", post(local_mark_ready))
         .route("/api/terminal/orders/{id}/delivered", post(local_mark_delivered))
+        .route("/api/terminal/next-order-number", get(local_next_order_number))
+        .route("/api/terminal/scan-recipe", post(local_scan_recipe))
         // Also allow local preview of track page
         .route("/track/{token}", get(public_tracker_page))
         .route("/api/public/orders/{token}", get(public_get_order))
