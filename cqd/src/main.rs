@@ -365,7 +365,7 @@ async fn local_terminal_page() -> Response {
 }
 
 async fn local_dispatcher_page() -> Response {
-    get_embedded_file("terminal.html", "text/html; charset=utf-8")
+    get_embedded_file("dispatcher.html", "text/html; charset=utf-8")
 }
 
 async fn local_list_orders(State(state): State<SharedState>) -> Json<Vec<Order>> {

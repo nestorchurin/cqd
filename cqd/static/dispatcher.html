@@ -2,38 +2,56 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CERESIT DISPATCHER // NOTHING OS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ДИСПЕТЧЕР КОЛІРУВАННЯ // NOTHING OS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&family=Unbounded:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-black: #000000;
             --surface: #0e0e0e;
             --surface-elevated: #161616;
-            --border-dim: #262626;
-            --border-bright: #444444;
+            --surface-card: rgba(18, 18, 18, 0.85);
+            --border-dim: rgba(255, 255, 255, 0.08);
+            --border-bright: rgba(255, 255, 255, 0.22);
+            --border-glow: rgba(255, 255, 255, 0.65);
+            --nothing-red: #d71921;
+            --nothing-red-glow: rgba(215, 25, 33, 0.45);
             --text-main: #f5f5f5;
             --text-muted: #888888;
-            --nothing-red: #d71921;
+            --text-sub: #555555;
+            --font-title: 'Unbounded', 'Space Grotesk', -apple-system, sans-serif;
             --font-dot: 'Doto', monospace;
             --font-body: 'Space Grotesk', -apple-system, sans-serif;
             --font-mono: 'Space Mono', monospace;
+            --ease-out-nothing: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-touch: cubic-bezier(0.2, 0, 0, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: var(--bg-black);
-            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-            background-size: 24px 24px;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.11) 1.2px, transparent 1.2px);
+            background-size: 22px 22px;
             color: var(--text-main);
             font-family: var(--font-body);
-            padding: 28px;
+            padding: 24px 20px 60px;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
+        .container {
+            width: 100%;
+            max-width: 1560px;
+            margin: 0 auto;
+        }
+
+        /* Top Brand Header */
         .header {
             display: flex;
             justify-content: space-between;
@@ -41,108 +59,186 @@
             border-bottom: 1px solid var(--border-dim);
             padding-bottom: 20px;
             margin-bottom: 28px;
+            gap: 16px;
         }
         .brand {
-            font-family: var(--font-dot);
-            font-size: 1.5rem;
-            font-weight: 900;
-            letter-spacing: 2px;
+            font-family: var(--font-title);
+            font-size: clamp(1.1rem, 3vw, 1.45rem);
+            font-weight: 800;
+            letter-spacing: -0.01em;
             color: #ffffff;
             display: flex;
             align-items: center;
             gap: 12px;
         }
         .red-dot {
-            width: 10px;
-            height: 10px;
+            width: 9px;
+            height: 9px;
             border-radius: 50%;
             background-color: var(--nothing-red);
-            box-shadow: 0 0 10px var(--nothing-red);
-            animation: pulse-red 2s infinite;
+            box-shadow: 0 0 10px var(--nothing-red), 0 0 20px var(--nothing-red-glow);
+            animation: glyph-pulse 2s infinite;
+            flex-shrink: 0;
+        }
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
         .tag-local {
             font-family: var(--font-mono);
             background: #ffffff;
             color: #000000;
-            font-size: 0.7rem;
-            font-weight: 700;
+            font-size: 0.68rem;
+            font-weight: 800;
             padding: 4px 10px;
             border-radius: 999px;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
-
-        /* Nothing Style Metric Widgets */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .metric-widget {
-            background: rgba(18, 18, 18, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border-dim);
-            border-radius: 24px;
-            padding: 22px;
-            position: relative;
-        }
-        .metric-title {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-        .metric-val {
-            font-family: var(--font-dot);
-            font-size: 2.6rem;
-            font-weight: 900;
-            color: #ffffff;
-            letter-spacing: 2px;
-            line-height: 1;
-        }
-        .metric-sub {
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 8px;
-        }
-
-        /* Main Layout */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 24px;
-        }
-
-        /* Order Form Panel */
-        .panel-widget {
-            background: rgba(18, 18, 18, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border-dim);
-            border-radius: 28px;
-            padding: 24px;
-        }
-        .panel-title {
+        .clock-feed {
             font-family: var(--font-dot);
             font-size: 1.25rem;
             font-weight: 900;
-            letter-spacing: 1.5px;
             color: #ffffff;
+            letter-spacing: 2px;
+        }
+
+        /* Mode Switcher Nav Bar */
+        .nav-switcher-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .nav-switcher {
+            display: inline-flex;
+            background: rgba(22, 22, 22, 0.95);
+            border: 1px solid var(--border-dim);
+            padding: 4px;
+            border-radius: 999px;
+            gap: 4px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .nav-btn {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 999px;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .nav-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .nav-btn.active {
+            background: #ffffff;
+            color: #000000;
+            font-weight: 800;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Metrics Bar */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 28px;
+        }
+        .metric-widget {
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dim);
+            border-radius: 22px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: border-color 0.16s;
+        }
+        .metric-widget:hover {
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .metric-title {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .metric-val {
+            font-family: var(--font-dot);
+            font-size: clamp(1.8rem, 4vw, 2.7rem);
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 1.5px;
+            line-height: 1.1;
+        }
+        .metric-sub {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Main Workspace Layout */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* Panel Widgets */
+        .panel-widget {
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dim);
+            border-radius: 24px;
+            padding: 24px;
+        }
+        .panel-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .panel-title {
+            font-family: var(--font-title);
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: #ffffff;
             display: flex;
             align-items: center;
             gap: 10px;
         }
+        .glyph-sq {
+            width: 7px;
+            height: 7px;
+            background: var(--nothing-red);
+            border-radius: 2px;
+            box-shadow: 0 0 6px var(--nothing-red);
+        }
+
+        /* Form Controls */
         .form-group {
             margin-bottom: 16px;
         }
         label {
             display: block;
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
             letter-spacing: 1px;
             color: var(--text-muted);
@@ -154,44 +250,129 @@
             background: #000000;
             border: 1px solid var(--border-bright);
             border-radius: 14px;
-            padding: 12px 14px;
+            padding: 13px 16px;
             color: #ffffff;
             font-family: var(--font-body);
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.15s;
+            transition: all 0.15s var(--ease-touch);
         }
         input:focus, select:focus {
             border-color: #ffffff;
+            background: rgba(20, 20, 20, 0.95);
+            box-shadow: 0 0 16px rgba(255, 255, 255, 0.12);
         }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        input::placeholder {
+            color: var(--text-sub);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
 
+        /* Base Selector Pills */
+        .base-selector-bar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .base-choice-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-bright);
+            color: #cccccc;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .base-choice-btn:hover {
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+        .base-choice-btn.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            font-weight: 800;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+        }
+        .base-choice-btn.base-c-btn.active {
+            background: var(--nothing-red);
+            color: #ffffff;
+            border-color: var(--nothing-red);
+            box-shadow: 0 0 14px var(--nothing-red-glow);
+        }
+
+        /* Submit Button */
         .btn-submit {
             width: 100%;
-            min-height: 54px;
+            min-height: 52px;
             background: #ffffff;
             color: #000000;
             border: none;
             border-radius: 999px;
             font-family: var(--font-body);
-            font-size: 0.95rem;
-            font-weight: 700;
+            font-size: 0.92rem;
+            font-weight: 800;
             letter-spacing: 0.5px;
             text-transform: uppercase;
             cursor: pointer;
-            margin-top: 14px;
+            margin-top: 10px;
+            transition: transform 0.15s var(--ease-touch), background 0.15s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-submit:active {
+            transform: scale(0.98);
+            background: #dcdcdc;
+        }
+
+        /* Search Log Input */
+        .search-table-input {
+            width: 100%;
+            max-width: 320px;
+            background: #000000;
+            border: 1px solid var(--border-bright);
+            border-radius: 999px;
+            padding: 9px 16px;
+            font-size: 0.82rem;
+            color: #ffffff;
+            font-family: var(--font-body);
+            outline: none;
             transition: all 0.15s;
         }
-        .btn-submit:active { transform: scale(0.98); background: #e5e5e5; }
+        .search-table-input:focus {
+            border-color: #ffffff;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+        }
+        .search-table-input::placeholder {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
 
         /* Orders Table */
         .table-container {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 16px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
+            min-width: 600px;
         }
         th {
             text-align: left;
@@ -202,169 +383,425 @@
             font-family: var(--font-mono);
             font-size: 0.7rem;
             letter-spacing: 1px;
+            white-space: nowrap;
         }
         td {
             padding: 16px 12px;
             border-bottom: 1px solid var(--border-dim);
             vertical-align: middle;
         }
-        tr:hover { background: rgba(255,255,255,0.02); }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
 
-        .status-badge {
-            display: inline-block;
-            font-family: var(--font-mono);
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid var(--border-bright);
+        .table-client-name {
+            font-family: var(--font-title);
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+            white-space: nowrap;
         }
-        .status-Registered { background: transparent; color: #ffffff; }
-        .status-TechCardPending { background: transparent; color: #ffffff; border-color: #888; }
-        .status-Accepted { background: #ffffff; color: #000000; }
-        .status-Mixing { background: #ffffff; color: #000000; }
-        .status-Paused { background: rgba(215, 25, 33, 0.2); color: #ff858d; border-color: var(--nothing-red); }
-        .status-Ready { background: #ffffff; color: #000000; }
-        .status-Delivered { background: #1a1a1a; color: #777777; border-color: #262626; }
+        .table-mat-name {
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.25;
+        }
+        .table-specs-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        .base-pill {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid var(--border-bright);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+        }
+        .base-pill.base-C {
+            border-color: rgba(215, 25, 33, 0.6);
+            color: #ff858d;
+            background: rgba(215, 25, 33, 0.12);
+        }
+        .color-pill {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-dim);
+            color: #ffffff;
+        }
 
-        /* Delay Alert Pill */
-        .delay-alert-pill {
+        .table-progress {
+            font-family: var(--font-dot);
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* Status Badge */
+        .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: #ff858d;
-            background: rgba(215, 25, 33, 0.15);
-            border: 1px solid var(--nothing-red);
-            padding: 4px 10px;
+            padding: 4px 12px;
             border-radius: 999px;
-            margin-top: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border: 1px solid var(--border-bright);
+            white-space: nowrap;
         }
+        .status-Registered { background: transparent; color: var(--text-muted); }
+        .status-TechCardPending { background: transparent; color: #ffffff; border-color: rgba(255, 255, 255, 0.4); }
+        .status-Accepted { background: rgba(255, 255, 255, 0.1); color: #ffffff; border-color: #ffffff; }
+        .status-Mixing { background: transparent; color: #ffffff; border-color: var(--nothing-red); box-shadow: 0 0 10px rgba(215, 25, 33, 0.2); }
+        .status-Paused { background: rgba(215, 25, 33, 0.2); color: #ff858d; border-color: var(--nothing-red); }
+        .status-Ready { background: #ffffff; color: #000000; border-color: #ffffff; box-shadow: 0 0 14px rgba(255, 255, 255, 0.25); }
+        .status-Delivered { background: #1a1a1a; color: #666666; border-color: #262626; }
 
         .link-track {
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #ffffff;
             text-decoration: underline;
             text-underline-offset: 4px;
+            white-space: nowrap;
+        }
+        .btn-delete-row {
+            background: transparent;
+            border: 1px solid rgba(215, 25, 33, 0.45);
+            color: #d71921;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            padding: 4px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn-delete-row:hover {
+            background: var(--nothing-red);
+            color: #ffffff;
+            border-color: var(--nothing-red);
         }
 
-        @keyframes pulse-red {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.6; }
-            100% { transform: scale(1); opacity: 1; }
+        /* Nothing OS Footer */
+        .board-footer {
+            margin-top: 50px;
+            padding-top: 24px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .footer-sep {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+            margin-bottom: 8px;
+        }
+        .footer-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-sten {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-dim);
+            border-radius: 999px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .footer-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--nothing-red);
+            box-shadow: 0 0 8px var(--nothing-red-glow);
+        }
+        .footer-title {
+            font-family: var(--font-dot);
+            font-size: 0.95rem;
+            letter-spacing: 1.5px;
+            color: #ffffff;
+            font-weight: 800;
+        }
+        .footer-note {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        @keyframes glyph-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.85; }
+            50% { transform: scale(1.35); opacity: 1; box-shadow: 0 0 14px var(--nothing-red), 0 0 25px var(--nothing-red-glow); }
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 991px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .search-table-input {
+                max-width: 100%;
+            }
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 16px 12px 50px;
+            }
+            .nav-btn {
+                padding: 6px 12px;
+                font-size: 0.68rem;
+            }
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+            }
+            .metric-widget {
+                padding: 12px 10px;
+                border-radius: 18px;
+            }
+            .metric-title {
+                font-size: 0.6rem;
+                letter-spacing: 0.5px;
+            }
+            .metric-val {
+                font-size: 1.45rem;
+            }
+            .metric-sub {
+                font-size: 0.6rem;
+            }
+            .panel-widget {
+                padding: 18px 14px;
+                border-radius: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="brand">
-            <div class="red-dot"></div>
-            <span>CERESIT DISPATCHER // NOTHING OS</span>
+    <div class="container">
+        <!-- Top Header -->
+        <div class="header">
+            <div class="brand">
+                <div class="red-dot"></div>
+                <span>CERESIT // ПАНЕЛЬ ДИСПЕТЧЕРА</span>
+            </div>
+            <div class="header-meta">
+                <span class="tag-local">ЛОКАЛЬНА МЕРЕЖА</span>
+                <span id="current-time" class="clock-feed">00:00:00</span>
+            </div>
         </div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-            <span class="tag-local">LOCAL LAN</span>
-            <span id="current-time" style="font-family: var(--font-dot); font-size: 1.4rem; color: #ffffff; letter-spacing: 2px;">00:00:00</span>
-        </div>
-    </div>
 
-    <!-- Metrics Grid -->
-    <div class="metrics-grid">
-        <div class="metric-widget">
-            <div class="metric-title">QUEUE ACTIVE</div>
-            <div class="metric-val" id="metric-active-count">0</div>
-            <div class="metric-sub" id="metric-mixing-sub">0 IN MIXER</div>
+        <!-- Mode Switcher Nav Bar -->
+        <div class="nav-switcher-bar">
+            <div class="nav-switcher">
+                <a href="/terminal" class="nav-btn">01. ЦЕХ</a>
+                <a href="/dispatcher" class="nav-btn active">02. ДИСПЕТЧЕР</a>
+                <a href="https://cqd.yunexal.com" target="_blank" class="nav-btn">03. РАМПА ↗</a>
+            </div>
         </div>
-        <div class="metric-widget">
-            <div class="metric-title">TOTAL TONNAGE</div>
-            <div class="metric-val" id="metric-tonnage">0 KG</div>
-            <div class="metric-sub" id="metric-buckets-sub">0 BUCKETS TINTED</div>
-        </div>
-        <div class="metric-widget">
-            <div class="metric-title">READY ON RAMP</div>
-            <div class="metric-val" id="metric-ready-count">0</div>
-            <div class="metric-sub">AWAITING CLIENT PICKUP</div>
-        </div>
-    </div>
 
-    <div class="main-layout">
-        <!-- New Order Registration -->
-        <div class="panel-widget">
-            <div class="panel-title">REGISTER BATCH</div>
-            <form id="new-order-form" onsubmit="createOrder(event)">
-                <div class="form-group">
-                    <label>CLIENT NAME</label>
-                    <input type="text" id="client_name" placeholder="БудСервіс (Василь)" required>
-                </div>
-                <div class="form-group">
-                    <label>CERESIT MATERIAL</label>
-                    <select id="material">
-                        <option value="Ceresit CT 174 (1.5mm)">Ceresit CT 174 (1.5mm)</option>
-                        <option value="Ceresit CT 174 (2.0mm)">Ceresit CT 174 (2.0mm)</option>
-                        <option value="Ceresit CT 60 (1.5mm)">Ceresit CT 60 (1.5mm)</option>
-                        <option value="Ceresit CT 48 (Фасадна силіконова)">Ceresit CT 48 (Силіконова)</option>
-                        <option value="Ceresit CT 54 (Силікатна)">Ceresit CT 54 (Силікатна)</option>
-                        <option value="Ceresit CT 74 (Силіконова 1.5mm)">Ceresit CT 74 (Силіконова 1.5mm)</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>BUCKET COUNT</label>
-                        <input type="number" id="total_buckets" min="1" max="200" value="5" required>
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+            <div class="metric-widget">
+                <div class="metric-title">01. АКТИВНА ЧЕРГА</div>
+                <div class="metric-val" id="metric-active-count">0</div>
+                <div class="metric-sub" id="metric-mixing-sub">0 В МІКСЕРІ</div>
+            </div>
+            <div class="metric-widget">
+                <div class="metric-title">02. ВАГА ПАРТІЙ</div>
+                <div class="metric-val" id="metric-tonnage">0 KG</div>
+                <div class="metric-sub" id="metric-buckets-sub">0 ВІДЕР ЗАКОЛІРОВАНО</div>
+            </div>
+            <div class="metric-widget">
+                <div class="metric-title">03. ГОТОВО НА РАМПІ</div>
+                <div class="metric-val" id="metric-ready-count">0</div>
+                <div class="metric-sub">ОЧІКУЄ ВИДАЧІ КЛІЄНТУ</div>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <!-- New Order Registration -->
+            <div class="panel-widget">
+                <div class="panel-header-row">
+                    <div class="panel-title">
+                        <div class="glyph-sq"></div>
+                        <span>РЕЄСТРАЦІЯ ПАРТІЇ</span>
                     </div>
+                </div>
+
+                <form id="new-order-form" onsubmit="createOrder(event)">
                     <div class="form-group">
-                        <label>WEIGHT</label>
-                        <select id="bucket_weight">
-                            <option value="25 кг">25 кг</option>
-                            <option value="15 кг">15 кг</option>
+                        <label>КЛІЄНТ</label>
+                        <input type="text" id="client_name" placeholder="Наприклад: Лац, БудСервіс (Василь)" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>МАТЕРІАЛ CERESIT</label>
+                        <select id="material">
+                            <optgroup label="Ґрунтуючі фарби">
+                                <option value="Ceresit CT 16 Ґрунтуюча фарба (15 кг / 10 л)">Ceresit CT 16 Ґрунтуюча фарба</option>
+                                <option value="Ceresit CT 16 Pro Ґрунтуюча фарба">Ceresit CT 16 Pro</option>
+                            </optgroup>
+                            <optgroup label="Штукатурки Силікон-силікатні / Силіконові">
+                                <option value="Ceresit CT 174 (1.5mm) Камінцева" selected>Ceresit CT 174 (1.5mm) Камінцева</option>
+                                <option value="Ceresit CT 174 (2.0mm) Камінцева">Ceresit CT 174 (2.0mm) Камінцева</option>
+                                <option value="Ceresit CT 60 (1.5mm) Камінцева">Ceresit CT 60 (1.5mm) Камінцева</option>
+                                <option value="Ceresit CT 74 (1.5mm) Силіконова">Ceresit CT 74 (1.5mm) Силіконова</option>
+                                <option value="Ceresit CT 175 (2.0mm) Короїд">Ceresit CT 175 (2.0mm) Короїд</option>
+                            </optgroup>
+                            <optgroup label="Фарби фасадно-інтер'єрні">
+                                <option value="Ceresit CT 48 Силіконова фарба">Ceresit CT 48 Силіконова фарба</option>
+                                <option value="Ceresit CT 54 Силікатна фарба">Ceresit CT 54 Силікатна фарба</option>
+                                <option value="Ceresit CT 44 Акрилова фарба">Ceresit CT 44 Акрилова фарба</option>
+                            </optgroup>
                         </select>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>COLOR RECIPE</label>
-                    <input type="text" id="color_code" placeholder="Nebraska 3 / Texas 4" required>
-                </div>
-                <button type="submit" class="btn-submit">DISPATCH TO WORKSHOP QUEUE</button>
-            </form>
 
-            <div id="new-order-result" style="display: none; margin-top: 20px; padding: 14px; background: #000; border: 1px solid var(--border-bright); border-radius: 16px;">
-                <div style="font-family: var(--font-mono); font-size: 0.8rem; color: #ffffff; margin-bottom: 6px;">● ORDER DISPATCHED</div>
-                <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">PUBLIC TRACKING URL:</div>
-                <div id="track-url-display" style="font-family: var(--font-mono); font-size: 0.8rem; word-break: break-all; color: #ffffff; margin-top: 4px;"></div>
+                    <div class="form-group">
+                        <label>БАЗА КОЛІРУВАННЯ (BASE)</label>
+                        <div class="base-selector-bar">
+                            <button type="button" class="base-choice-btn active" data-base="База A" onclick="selectBase('База A')">База A</button>
+                            <button type="button" class="base-choice-btn" data-base="База B" onclick="selectBase('База B')">База B</button>
+                            <button type="button" class="base-choice-btn base-c-btn" data-base="База C" onclick="selectBase('База C')">База C</button>
+                            <button type="button" class="base-choice-btn" data-base="Без бази" onclick="selectBase('Без бази')">Інша</button>
+                        </div>
+                        <input type="hidden" id="base_input" value="База A">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>КІЛЬКІСТЬ ВІДЕР</label>
+                            <input type="number" id="total_buckets" min="1" max="500" value="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>ФАСУВАННЯ / ВАГА</label>
+                            <select id="bucket_weight">
+                                <option value="25 кг" selected>25 кг (Штукатурка)</option>
+                                <option value="15 кг">15 кг (СТ 16 / Ґрунт)</option>
+                                <option value="10 кг">10 кг (CT 721 / Фарба)</option>
+                                <option value="10 л">10 л (Відро 10л)</option>
+                                <option value="15 л">15 л (Відро 15л)</option>
+                                <option value="5 кг">5 кг (Мале 5кг)</option>
+                                <option value="5 л">5 л (Мале 5л)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>КОЛЕКЦІЯ <span style="font-weight: normal; color: var(--text-sub);">(ЗА БАЖАННЯМ)</span></label>
+                            <input type="text" id="collection" list="collection-presets" placeholder="RAL Classic / NCS">
+                            <datalist id="collection-presets">
+                                <option value="RAL Classic">
+                                <option value="NCS">
+                                <option value="Colours of Nature">
+                                <option value="RAL Design">
+                            </datalist>
+                        </div>
+                        <div class="form-group">
+                            <label>КОД КОЛЬОРУ</label>
+                            <input type="text" id="color_code" placeholder="9005 / 9000-N / Texas 4" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <span>ВІДПРАВИТИ В ЧЕРГУ ЦЕХУ</span>
+                        <span>➔</span>
+                    </button>
+                </form>
+
+                <div id="new-order-result" style="display: none; margin-top: 20px; padding: 16px; background: #000; border: 1px solid var(--border-bright); border-radius: 18px;">
+                    <div style="font-family: var(--font-mono); font-size: 0.78rem; color: #ffffff; margin-bottom: 6px; font-weight: 700;">● ПАРТІЮ ЗАРЕЄСТРОВАНО В ЧЕРЗІ</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">ПОСИЛАННЯ ДЛЯ ТРЕКІНГУ КЛІЄНТОМ:</div>
+                    <div id="track-url-display" style="font-family: var(--font-mono); font-size: 0.8rem; word-break: break-all; color: #ffffff; margin-top: 4px;"></div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="panel-widget">
+                <div class="panel-header-row">
+                    <div class="panel-title">
+                        <div class="glyph-sq"></div>
+                        <span>ЖУРНАЛ ВИРОБНИЦТВА НАЖИВО</span>
+                    </div>
+                    <input type="text" id="search_table" class="search-table-input" placeholder="🔍 ПОШУК ЗА КЛІЄНТОМ ЧИ МАТЕРІАЛОМ..." oninput="renderTable()">
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>КЛІЄНТ</th>
+                                <th>МАТЕРІАЛ ТА КОЛІР</th>
+                                <th>ВІДРА</th>
+                                <th>СТАТУС</th>
+                                <th>ДІЇ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- Orders Table -->
-        <div class="panel-widget">
-            <div class="panel-title">LIVE PRODUCTION LOG</div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>CLIENT</th>
-                            <th>MATERIAL</th>
-                            <th>PROGRESS</th>
-                            <th>STATUS</th>
-                            <th>TRACK</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orders-tbody">
-                        <!-- Populated by JS -->
-                    </tbody>
-                </table>
+        <!-- Nothing OS Footer -->
+        <footer class="board-footer">
+            <div class="footer-sep"></div>
+            <div class="footer-wrap">
+                <div class="footer-sten">
+                    <span class="footer-dot"></span>
+                    <span class="footer-title">Made For STEN</span>
+                </div>
+                <div class="footer-note">ПЕТ-ПРОЄКТ ДЛЯ СЕБЕ // НЕ ДЛЯ КОМПАНІЇ</div>
             </div>
-        </div>
+        </footer>
     </div>
 
     <script>
         let orders = [];
 
-        setInterval(() => {
-            document.getElementById('current-time').innerText = new Date().toTimeString().split(' ')[0];
-        }, 1000);
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const clockEl = document.getElementById('current-time');
+            if (clockEl) clockEl.innerText = `${h}:${m}:${s}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function selectBase(baseVal) {
+            document.getElementById('base_input').value = baseVal;
+            document.querySelectorAll('.base-choice-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-base') === baseVal);
+            });
+        }
 
         async function fetchOrders() {
             try {
@@ -375,7 +812,7 @@
                     renderMetrics();
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Fetch error:', err);
             }
         }
 
@@ -385,41 +822,106 @@
             const ready = orders.filter(o => o.status === 'Ready');
 
             document.getElementById('metric-active-count').innerText = active.length;
-            document.getElementById('metric-mixing-sub').innerText = `${mixing.length} IN MIXER`;
+            document.getElementById('metric-mixing-sub').innerText = `${mixing.length} В МІКСЕРІ`;
             document.getElementById('metric-ready-count').innerText = ready.length;
 
             let totalKg = 0;
             let totalBuckets = 0;
 
             orders.forEach(o => {
-                const weightPerBucket = o.bucket_weight.includes('15') ? 15 : 25;
+                const weightPerBucket = (o.bucket_weight && o.bucket_weight.includes('15')) ? 15 : 25;
                 totalKg += o.buckets_completed * weightPerBucket;
                 totalBuckets += o.buckets_completed;
             });
 
-            document.getElementById('metric-tonnage').innerText = `${totalKg} KG`;
-            document.getElementById('metric-buckets-sub').innerText = `${totalBuckets} BUCKETS PROCESSED`;
+            document.getElementById('metric-tonnage').innerText = totalKg >= 1000 ? `${(totalKg / 1000).toFixed(2)} T` : `${Math.round(totalKg)} KG`;
+            document.getElementById('metric-buckets-sub').innerText = `${totalBuckets} ВІДЕР ЗАКОЛІРОВАНО`;
+        }
+
+        function getStatusInfo(status) {
+            switch(status) {
+                case 'Ready':
+                    return { label: 'ГОТОВО', cls: 'status-Ready' };
+                case 'Mixing':
+                    return { label: 'МІКСЕР', cls: 'status-Mixing' };
+                case 'Accepted':
+                    return { label: 'В РОБОТІ', cls: 'status-Accepted' };
+                case 'Paused':
+                    return { label: 'ПАУЗА', cls: 'status-Paused' };
+                case 'TechCardPending':
+                    return { label: 'ОЧІКУЄ ТЕХКАРТУ', cls: 'status-TechCardPending' };
+                case 'Delivered':
+                    return { label: 'ВИДАНО', cls: 'status-Delivered' };
+                default:
+                    return { label: 'В ЧЕРЗІ', cls: 'status-Registered' };
+            }
+        }
+
+        function formatColor(o) {
+            const col = o.collection ? o.collection.trim() : '';
+            const code = o.color_code ? o.color_code.trim() : 'Стандарт';
+            return col ? `${col} ${code}` : code;
         }
 
         function renderTable() {
             const tbody = document.getElementById('orders-tbody');
             tbody.innerHTML = '';
 
-            orders.forEach(o => {
+            const query = (document.getElementById('search_table')?.value || '').toLowerCase().trim();
+            const filtered = orders.filter(o => {
+                if (!query) return true;
+                return (o.client_name && o.client_name.toLowerCase().includes(query)) ||
+                       (o.material && o.material.toLowerCase().includes(query)) ||
+                       (o.color_code && o.color_code.toLowerCase().includes(query)) ||
+                       (o.collection && o.collection.toLowerCase().includes(query));
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 36px 16px; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px;">
+                            ${query ? 'НЕМАЄ ЗАМОВЛЕНЬ ЗА ВАШИМ ЗАПИТОМ' : 'ЧЕРГА ПОРОЖНЯ // НЕМАЄ АКТИВНИХ ПАРТІЙ'}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filtered.forEach(o => {
                 const tr = document.createElement('tr');
+                const st = getStatusInfo(o.status);
+
+                let baseBadge = '';
+                if (o.base) {
+                    const bLetter = o.base.replace('База ', '').trim();
+                    const bClass = bLetter === 'C' ? 'base-C' : '';
+                    baseBadge = `<span class="base-pill ${bClass}">${o.base}</span>`;
+                }
+
+                const colorFormatted = formatColor(o);
 
                 tr.innerHTML = `
-                    <td><strong style="font-family: var(--font-dot); font-size: 1.15rem; letter-spacing: 1px;">${o.client_name}</strong></td>
                     <td>
-                        <div>${o.material}</div>
-                        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${o.color_code}</div>
+                        <div class="table-client-name" title="${o.client_name}">${o.client_name}</div>
                     </td>
-                    <td style="font-family: var(--font-mono);">${o.buckets_completed} / ${o.total_buckets}</td>
-                    <td><span class="status-badge status-${o.status}">${o.status}</span></td>
                     <td>
-                        <div style="display: flex; gap: 8px; align-items: center;">
-                            <a href="/track/${o.token}" target="_blank" class="link-track">TRACK ↗</a>
-                            <button onclick="deleteOrder('${o.id}', '${o.client_name}')" style="background: transparent; border: 1px solid rgba(215, 25, 33, 0.45); color: #d71921; font-family: var(--font-mono); font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;">✕</button>
+                        <div class="table-mat-name">${o.material}</div>
+                        <div class="table-specs-row">
+                            ${baseBadge}
+                            <span class="color-pill">${colorFormatted}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="table-progress">${o.buckets_completed} / ${o.total_buckets}</div>
+                        <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${o.bucket_weight}</div>
+                    </td>
+                    <td>
+                        <span class="status-badge ${st.cls}">${st.label}</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <a href="/track/${o.token}" target="_blank" class="link-track">ТРЕКІНГ ↗</a>
+                            <button onclick="deleteOrder('${o.id}', '${o.client_name}')" class="btn-delete-row" title="Видалити це замовлення">✕</button>
                         </div>
                     </td>
                 `;
@@ -429,40 +931,55 @@
 
         async function createOrder(e) {
             e.preventDefault();
+            const clientVal = document.getElementById('client_name').value.trim();
+            const materialVal = document.getElementById('material').value;
+            const baseVal = document.getElementById('base_input').value;
+            const totalBucketsVal = parseInt(document.getElementById('total_buckets').value) || 1;
+            const bucketWeightVal = document.getElementById('bucket_weight').value;
+            const collectionVal = document.getElementById('collection').value.trim();
+            const colorCodeVal = document.getElementById('color_code').value.trim();
+
             const payload = {
-                client_name: document.getElementById('client_name').value,
-                material: document.getElementById('material').value,
-                total_buckets: parseInt(document.getElementById('total_buckets').value),
-                bucket_weight: document.getElementById('bucket_weight').value,
-                color_code: document.getElementById('color_code').value,
+                order_number: null,
+                client_name: clientVal || 'Клієнт (Самовивіз)',
+                material: materialVal,
+                base: baseVal,
+                total_buckets: totalBucketsVal,
+                bucket_weight: bucketWeightVal,
+                collection: collectionVal || null,
+                color_code: colorCodeVal || null,
             };
 
-            const res = await fetch('/api/admin/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            try {
+                const res = await fetch('/api/admin/orders', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            if (res.ok) {
-                const data = await res.json();
-                document.getElementById('new-order-result').style.display = 'block';
-                const fullUrl = `https://cqd.yunexal.com/track/${data.token}`;
-                document.getElementById('track-url-display').innerText = fullUrl;
-                document.getElementById('new-order-form').reset();
-                async function deleteOrder(id, num) {
-            if (!confirm(`Видалити замовлення ${num}?`)) return;
-            const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchOrders();
-        }
-
-        fetchOrders();
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('new-order-result').style.display = 'block';
+                    const fullUrl = `https://cqd.yunexal.com/track/${data.token}`;
+                    document.getElementById('track-url-display').innerText = fullUrl;
+                    document.getElementById('client_name').value = '';
+                    document.getElementById('collection').value = '';
+                    document.getElementById('color_code').value = '';
+                    fetchOrders();
+                }
+            } catch (err) {
+                console.error('Create order error:', err);
             }
         }
 
-        async function deleteOrder(id, num) {
-            if (!confirm(`Видалити замовлення ${num}?`)) return;
-            const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
-            if (res.ok) fetchOrders();
+        async function deleteOrder(id, name) {
+            if (!confirm(`Видалити замовлення для ${name}?`)) return;
+            try {
+                const res = await fetch(`/api/admin/orders/${id}`, { method: 'DELETE' });
+                if (res.ok) fetchOrders();
+            } catch (err) {
+                console.error('Delete error:', err);
+            }
         }
 
         fetchOrders();

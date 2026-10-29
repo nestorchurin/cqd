@@ -550,12 +550,12 @@
 
                 const btn = document.getElementById('push-btn');
                 btn.className = 'btn-nothing subscribed';
-                btn.innerHTML = '<span>СПОДІВАННЯ АКТИВНІ ✓</span>';
+                btn.innerHTML = '<span>СПОВІЩЕННЯ АКТИВНІ ✓</span>';
             } catch (err) {
                 console.error('Push error:', err);
                 const btn = document.getElementById('push-btn');
                 if (btn) {
-                    btn.innerHTML = '<span>СПОДІВАННЯ НЕДОСТУПНІ</span>';
+                    btn.innerHTML = '<span>СПОВІЩЕННЯ НЕДОСТУПНІ</span>';
                 }
                 alert('Помилка активації сповіщень: ' + (err.message || err));
             }
@@ -563,15 +563,20 @@
 
         function urlB64ToUint8Array(base64String) {
             if (!base64String) return new Uint8Array(0);
-            const clean = base64String.replace(/=/g, '');
-            const padding = '='.repeat((4 - clean.length % 4) % 4);
-            const base64 = (clean + padding).replace(/\-/g, '+').replace(/_/g, '/');
-            const rawData = window.atob(base64);
-            const outputArray = new Uint8Array(rawData.length);
-            for (let i = 0; i < rawData.length; ++i) {
-                outputArray[i] = rawData.charCodeAt(i);
+            try {
+                const clean = base64String.trim().replace(/=/g, '');
+                const padding = '='.repeat((4 - clean.length % 4) % 4);
+                const base64 = (clean + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                const rawData = window.atob(base64);
+                const outputArray = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            } catch (e) {
+                console.error('Failed to decode base64 VAPID key:', e, base64String);
+                throw e;
             }
-            return outputArray;
         }
 
         fetchOrder();
