@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CERESIT (CQD) — TRACKER</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --surface: #111111;
+            --surface-elevated: #1a1a1a;
+            --border-dim: #262626;
+            --border-bright: #404040;
+            --text-main: #f5f5f5;
+            --text-muted: #888888;
+            --nothing-red: #d71921;
+            --font-dot: 'Doto', monospace;
+            --font-body: 'Space Grotesk', -apple-system, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-black);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            padding: 24px 16px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* Top Brand Header */
+        .top-brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-dim);
+            margin-bottom: 24px;
+        }
+        .brand-title {
+            font-family: var(--font-dot);
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .live-dot-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .red-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--nothing-red);
+            box-shadow: 0 0 8px var(--nothing-red);
+            animation: pulse-red 2s infinite;
+        }
+
+        /* Nothing Style Widget Card */
+        .widget-card {
+            background: rgba(17, 17, 17, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-dim);
+            border-radius: 28px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        .widget-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        /* Hero Order Header */
+        .order-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 20px;
+        }
+        .order-id {
+            font-family: var(--font-dot);
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+            line-height: 1;
+        }
+        .order-client {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: right;
+            max-width: 50%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Modular Grid */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .spec-box {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-dim);
+            border-radius: 18px;
+            padding: 14px;
+        }
+        .spec-label {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .spec-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Nothing Status Banner */
+        .status-banner {
+            background: var(--surface-elevated);
+            border: 1px dashed var(--border-bright);
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .status-pill {
+            font-family: var(--font-dot);
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Delay Notice */
+        .delay-pill {
+            background: rgba(215, 25, 33, 0.12);
+            border: 1px solid var(--nothing-red);
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            color: #ff858d;
+            font-family: var(--font-mono);
+            line-height: 1.4;
+        }
+
+        /* Nothing Dot-Timeline */
+        .nothing-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin: 20px 0;
+            position: relative;
+        }
+        .step-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .step-row.active {
+            background: var(--surface-elevated);
+            border-color: var(--border-bright);
+        }
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--border-bright);
+            background: transparent;
+            flex-shrink: 0;
+        }
+        .step-row.done .step-dot {
+            background: #ffffff;
+            border-color: #ffffff;
+            box-shadow: 0 0 10px rgba(255,255,255,0.6);
+        }
+        .step-row.active .step-dot {
+            background: var(--nothing-red);
+            border-color: var(--nothing-red);
+            box-shadow: 0 0 12px var(--nothing-red);
+            animation: pulse-red 1.5s infinite;
+        }
+        .step-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .step-title {
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        .step-row.done .step-title { color: #ffffff; }
+        .step-row.active .step-title { color: #ffffff; font-weight: 700; }
+        .step-sub {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: #555555;
+        }
+        .step-row.active .step-sub { color: var(--text-muted); }
+
+        /* Nothing OS Pill Button */
+        .btn-nothing {
+            width: 100%;
+            min-height: 60px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 999px;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.15s;
+            box-shadow: 0 6px 20px rgba(255,255,255,0.15);
+        }
+        .btn-nothing:active { transform: scale(0.98); background: #e5e5e5; }
+        .btn-nothing.subscribed {
+            background: var(--surface-elevated);
+            color: var(--text-main);
+            border: 1px solid var(--border-bright);
+            box-shadow: none;
+            cursor: default;
+        }
+
+        /* Mixer Live Badge */
+        .mixer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: #ffffff;
+            background: #000;
+            border: 1px solid var(--border-bright);
+            padding: 8px 14px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Nothing Bar -->
+        <div class="top-brand">
+            <div class="brand-title">CERESIT // CQD</div>
+            <div class="live-dot-badge">
+                <div class="red-dot"></div>
+                <span>LIVE FEED</span>
+            </div>
+        </div>
+
+        <div id="loading" class="widget-card" style="text-align: center; color: var(--text-muted); font-family: var(--font-mono);">
+            SEARCHING ORDER MATRIX...
+        </div>
+
+        <div id="order-container" style="display: none;">
+            <div class="widget-card">
+                <div class="order-hero">
+                    <div id="order-num" class="order-id">#0000</div>
+                    <div id="order-client" class="order-client">CLIENT</div>
+                </div>
+
+                <div class="specs-grid">
+                    <div class="spec-box">
+                        <div class="spec-label">MATERIAL</div>
+                        <div id="order-material" class="spec-value">—</div>
+                    </div>
+                    <div class="spec-box">
+                        <div class="spec-label">COLOR RECIPE</div>
+                        <div id="order-color" class="spec-value">—</div>
+                    </div>
+                    <div class="spec-box">
+                        <div class="spec-label">BATCH QUANTITY</div>
+                        <div id="order-buckets" class="spec-value">—</div>
+                    </div>
+                    <div class="spec-box">
+                        <div class="spec-label">BUCKET SIZE</div>
+                        <div id="order-weight" class="spec-value">—</div>
+                    </div>
+                </div>
+
+                <div class="status-banner">
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">CURRENT STATE:</span>
+                    <span id="order-status-badge" class="status-pill">PENDING</span>
+                </div>
+
+                <div id="delay-box" class="delay-pill" style="display: none;">
+                    <span style="color: var(--nothing-red); font-weight: 700;">● NOTICE:</span>
+                    <span id="delay-text">Очікується передача техкарти з офісу</span>
+                </div>
+
+                <div id="mixer-box" style="display: none;">
+                    <div class="mixer-badge">
+                        <div class="red-dot"></div>
+                        <span id="mixer-progress">ЗМІШУВАННЯ ВІДРА 1 З 5</span>
+                    </div>
+                </div>
+
+                <!-- Nothing Dot Timeline -->
+                <div class="nothing-timeline">
+                    <div id="step-registered" class="step-row">
+                        <div class="step-dot"></div>
+                        <div class="step-info">
+                            <div class="step-title">01. ОФІСНА РЕЄСТРАЦІЯ</div>
+                            <div class="step-sub">Накладна внесена диспетчером</div>
+                        </div>
+                    </div>
+
+                    <div id="step-pending" class="step-row">
+                        <div class="step-dot"></div>
+                        <div class="step-info">
+                            <div class="step-title">02. ТЕХНОЛОГІЧНА КАРТА</div>
+                            <div class="step-sub">Передача рецепта до цеху</div>
+                        </div>
+                    </div>
+
+                    <div id="step-mixing" class="step-row">
+                        <div class="step-dot"></div>
+                        <div class="step-info">
+                            <div class="step-title">03. КОЛІРУВАННЯ & МІКСЕР</div>
+                            <div class="step-sub">Дозування пігментів та змішування</div>
+                        </div>
+                    </div>
+
+                    <div id="step-ready" class="step-row">
+                        <div class="step-dot"></div>
+                        <div class="step-info">
+                            <div class="step-title">04. ГОТОВО НА РАМПІ</div>
+                            <div class="step-sub">Сектор відвантаження готової продукції</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="push-btn" class="btn-nothing" onclick="subscribeToPush()">
+                    <span>NOTIFY WHEN READY</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = window.location.pathname.split('/').pop();
+        let vapidPublicKey = null;
+
+        async function fetchOrder() {
+            try {
+                const res = await fetch(`/api/public/orders/${token}`);
+                if (!res.ok) {
+                    document.getElementById('loading').innerText = 'ORDER NOT FOUND // 404';
+                    return;
+                }
+                const data = await res.json();
+                vapidPublicKey = data.vapid_public_key;
+                renderOrder(data);
+            } catch (err) {
+                console.error('Fetch error:', err);
+            }
+        }
+
+        function renderOrder(data) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('order-container').style.display = 'block';
+
+            document.getElementById('order-num').innerText = data.order_number;
+            document.getElementById('order-client').innerText = data.client_name;
+            document.getElementById('order-material').innerText = data.material;
+            document.getElementById('order-color').innerText = data.color_code;
+            document.getElementById('order-buckets').innerText = `${data.buckets_completed} / ${data.total_buckets}`;
+            document.getElementById('order-weight').innerText = data.bucket_weight;
+
+            const steps = ['registered', 'pending', 'mixing', 'ready'];
+            steps.forEach(s => {
+                const el = document.getElementById(`step-${s}`);
+                el.className = 'step-row';
+            });
+
+            const delayBox = document.getElementById('delay-box');
+            const mixerBox = document.getElementById('mixer-box');
+            delayBox.style.display = 'none';
+            mixerBox.style.display = 'none';
+
+            if (data.status === 'Registered') {
+                document.getElementById('step-registered').className = 'step-row active';
+                document.getElementById('order-status-badge').innerText = 'REGISTERED';
+            } else if (data.status === 'TechCardPending') {
+                document.getElementById('step-registered').className = 'step-row done';
+                document.getElementById('step-pending').className = 'step-row active';
+                document.getElementById('order-status-badge').innerText = 'AWAITING CARD';
+                delayBox.style.display = 'block';
+                document.getElementById('delay-text').innerText = 'Очікується передача технологічної карти з офісу до цеху.';
+            } else if (data.status === 'Accepted' || data.status === 'Mixing' || data.status === 'Paused') {
+                document.getElementById('step-registered').className = 'step-row done';
+                document.getElementById('step-pending').className = 'step-row done';
+                document.getElementById('step-mixing').className = 'step-row active';
+
+                if (data.status === 'Mixing') {
+                    mixerBox.style.display = 'block';
+                    document.getElementById('mixer-progress').innerText = `ЗМІШУВАННЯ ВІДРА ${data.buckets_completed + 1} З ${data.total_buckets}`;
+                    document.getElementById('order-status-badge').innerText = `MIXING (${data.buckets_completed}/${data.total_buckets})`;
+                } else if (data.status === 'Paused') {
+                    delayBox.style.display = 'block';
+                    document.getElementById('delay-text').innerText = `ЗАТРИМКА: ${data.delay_reason || 'Вимушена технічна зупинка'}`;
+                    document.getElementById('order-status-badge').innerText = 'HOLD';
+                } else {
+                    document.getElementById('order-status-badge').innerText = 'ACCEPTED';
+                }
+            } else if (data.status === 'Ready' || data.status === 'Delivered') {
+                steps.forEach(s => document.getElementById(`step-${s}`).className = 'step-row done');
+                document.getElementById('step-ready').className = 'step-row done active';
+                document.getElementById('order-status-badge').innerText = 'READY FOR PICKUP';
+                document.getElementById('order-status-badge').style.color = '#ffffff';
+            }
+        }
+
+        async function subscribeToPush() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                alert('Web Push is not supported in this browser.');
+                return;
+            }
+
+            try {
+                const reg = await navigator.serviceWorker.register('/sw.js');
+                const permission = await Notification.requestPermission();
+                if (permission !== 'granted') {
+                    alert('Notification permission denied.');
+                    return;
+                }
+
+                if (!vapidPublicKey) {
+                    alert('Server key not retrieved.');
+                    return;
+                }
+
+                const sub = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlB64ToUint8Array(vapidPublicKey)
+                });
+
+                await fetch(`/api/public/orders/${token}/subscribe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(sub)
+                });
+
+                const btn = document.getElementById('push-btn');
+                btn.className = 'btn-nothing subscribed';
+                btn.innerHTML = '<span>NOTIFICATIONS ACTIVE</span>';
+            } catch (err) {
+                console.error('Push error:', err);
+                alert('Push error: ' + err.message);
+            }
+        }
+
+        function urlB64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        fetchOrder();
+        setInterval(fetchOrder, 3000);
+    </script>
+</body>
+</html>

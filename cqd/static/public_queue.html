@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CERESIT QUEUE BOARD // NOTHING OS</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --surface: #0e0e0e;
+            --surface-elevated: #161616;
+            --border-dim: #262626;
+            --border-bright: #444444;
+            --text-main: #f5f5f5;
+            --text-muted: #888888;
+            --nothing-red: #d71921;
+            --font-dot: 'Doto', monospace;
+            --font-body: 'Space Grotesk', -apple-system, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-black);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            padding: 24px 16px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        /* Top Bar */
+        .top-brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-dim);
+            margin-bottom: 24px;
+        }
+        .brand-title {
+            font-family: var(--font-dot);
+            font-weight: 900;
+            font-size: 1.25rem;
+            letter-spacing: 2px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .red-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--nothing-red);
+            box-shadow: 0 0 8px var(--nothing-red);
+            animation: pulse-red 2s infinite;
+        }
+        .clock-feed {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        /* Hero Banner */
+        .board-header {
+            margin-bottom: 24px;
+        }
+        .board-title {
+            font-family: var(--font-dot);
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+        .board-sub {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Search input */
+        .search-box {
+            margin-bottom: 24px;
+        }
+        .search-input {
+            width: 100%;
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-bright);
+            border-radius: 999px;
+            padding: 14px 22px;
+            color: #ffffff;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .search-input:focus { border-color: #ffffff; }
+
+        /* Section Headings */
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin: 24px 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Order Cards */
+        .orders-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .order-card {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-dim);
+            border-radius: 22px;
+            padding: 18px 22px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.15s;
+            position: relative;
+            overflow: hidden;
+        }
+        .order-card:active { transform: scale(0.98); }
+        .order-card.ready-card {
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(26, 26, 26, 0.95);
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.08);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-num {
+            font-family: var(--font-dot);
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+        .status-badge {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid var(--border-bright);
+            background: var(--surface-elevated);
+            color: var(--text-muted);
+        }
+        .status-badge.ready {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+        .status-badge.mixing {
+            background: transparent;
+            color: #ffffff;
+            border-color: var(--nothing-red);
+        }
+
+        .card-details {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: baseline;
+        }
+        .card-mat {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .card-client {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+        .card-progress {
+            font-family: var(--font-dot);
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-align: right;
+        }
+
+        .tap-hint {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding-top: 10px;
+            margin-top: 2px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--surface);
+            border: 1px dashed var(--border-dim);
+            border-radius: 20px;
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Top Bar -->
+        <div class="top-brand">
+            <div class="brand-title">
+                <div class="red-dot"></div>
+                <span>CERESIT // CQD</span>
+            </div>
+            <div id="live-clock" class="clock-feed">00:00:00</div>
+        </div>
+
+        <div class="board-header">
+            <div class="board-title">RAMP QUEUE BOARD</div>
+            <div class="board-sub">ТАБЛО ЧЕРГИ ВІДВАНТАЖЕННЯ ТА КОЛІРУВАННЯ</div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="search-input" class="search-input" placeholder="ПОШУК ЗА НОМЕРОМ НАКЛАДНОЇ АБО КЛІЄНТОМ..." oninput="filterOrders()">
+        </div>
+
+        <div id="loading" class="empty-state">
+            LOADING LIVE BATCH MATRIX...
+        </div>
+
+        <div id="board-content" style="display: none;">
+            <!-- Ready Section -->
+            <div class="section-label">
+                <span>01. ГОТОВО ДО ВИДАЧІ НА РАМПІ</span>
+                <span id="ready-count">[0]</span>
+            </div>
+            <div id="ready-list" class="orders-grid"></div>
+
+            <!-- In Progress Section -->
+            <div class="section-label">
+                <span>02. У ВИРОБНИЦТВІ (КОЛІРУВАННЯ / МІКСЕР)</span>
+                <span id="working-count">[0]</span>
+            </div>
+            <div id="working-list" class="orders-grid"></div>
+
+            <!-- Pending Section -->
+            <div class="section-label">
+                <span>03. ОЧІКУЮТЬ РЕЦЕПТА В ЦЕХУ</span>
+                <span id="pending-count">[0]</span>
+            </div>
+            <div id="pending-list" class="orders-grid"></div>
+        </div>
+    </div>
+
+    <script>
+        let allOrders = [];
+
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toTimeString().split(' ')[0];
+        }, 1000);
+
+        async function fetchQueue() {
+            try {
+                const res = await fetch('/api/public/queue');
+                if (res.ok) {
+                    allOrders = await res.json();
+                    renderBoard(allOrders);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterOrders() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            if (!query) {
+                renderBoard(allOrders);
+                return;
+            }
+            const filtered = allOrders.filter(o => 
+                o.order_number.toLowerCase().includes(query) ||
+                o.client_name.toLowerCase().includes(query) ||
+                o.material.toLowerCase().includes(query) ||
+                o.color_code.toLowerCase().includes(query)
+            );
+            renderBoard(filtered);
+        }
+
+        function renderBoard(orders) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('board-content').style.display = 'block';
+
+            const readyList = document.getElementById('ready-list');
+            const workingList = document.getElementById('working-list');
+            const pendingList = document.getElementById('pending-list');
+
+            readyList.innerHTML = '';
+            workingList.innerHTML = '';
+            pendingList.innerHTML = '';
+
+            const ready = orders.filter(o => o.status === 'Ready');
+            const working = orders.filter(o => o.status === 'Mixing' || o.status === 'Accepted' || o.status === 'Paused');
+            const pending = orders.filter(o => o.status === 'Registered' || o.status === 'TechCardPending');
+
+            document.getElementById('ready-count').innerText = `[${ready.length}]`;
+            document.getElementById('working-count').innerText = `[${working.length}]`;
+            document.getElementById('pending-count').innerText = `[${pending.length}]`;
+
+            if (ready.length === 0) {
+                readyList.innerHTML = '<div class="empty-state">НЕМАЄ ЗАМОВЛЕНЬ НА ВИДАЧУ</div>';
+            } else {
+                ready.forEach(o => readyList.appendChild(createOrderCard(o, true)));
+            }
+
+            if (working.length === 0) {
+                workingList.innerHTML = '<div class="empty-state">МІКСЕРИ ВІЛЬНІ</div>';
+            } else {
+                working.forEach(o => workingList.appendChild(createOrderCard(o, false)));
+            }
+
+            if (pending.length === 0) {
+                pendingList.innerHTML = '<div class="empty-state">ЧЕРГА ПОРОЖНЯ</div>';
+            } else {
+                pending.forEach(o => pendingList.appendChild(createOrderCard(o, false)));
+            }
+        }
+
+        function createOrderCard(o, isReady) {
+            const a = document.createElement('a');
+            a.className = 'order-card' + (isReady ? ' ready-card' : '');
+            a.href = `/track/${o.token}`;
+
+            let statusLabel = o.status;
+            let badgeClass = 'status-badge';
+
+            if (o.status === 'Ready') {
+                statusLabel = 'ГОТОВО ДО ВИДАЧІ';
+                badgeClass += ' ready';
+            } else if (o.status === 'Mixing') {
+                statusLabel = `МІКСЕР (${o.buckets_completed + 1}/${o.total_buckets})`;
+                badgeClass += ' mixing';
+            } else if (o.status === 'Accepted') {
+                statusLabel = 'КОЛІРУВАННЯ';
+            } else if (o.status === 'Paused') {
+                statusLabel = 'ПАУЗА';
+            } else if (o.status === 'TechCardPending') {
+                statusLabel = 'ОЧІКУЄ ТЕХКАРТУ';
+            } else {
+                statusLabel = 'ЗАРЕЄСТРОВАНО';
+            }
+
+            a.innerHTML = `
+                <div class="card-top">
+                    <div class="card-num">${o.order_number}</div>
+                    <div class="${badgeClass}">${statusLabel}</div>
+                </div>
+                <div class="card-details">
+                    <div>
+                        <div class="card-mat">${o.material}</div>
+                        <div class="card-client">${o.client_name} // ${o.color_code}</div>
+                    </div>
+                    <div class="card-progress">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted);">${o.bucket_weight}</span></div>
+                </div>
+                <div class="tap-hint">
+                    <span>ПЕРСОНАЛЬНИЙ ТРЕКІНГ ЗАМОВЛЕННЯ</span>
+                    <span>ВІДКРИТИ ↗</span>
+                </div>
+            `;
+            return a;
+        }
+
+        fetchQueue();
+        setInterval(fetchQueue, 3000);
+    </script>
+</body>
+</html>

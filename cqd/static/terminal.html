@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CERESIT COMMAND CENTER // NOTHING OS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-black: #000000;
+            --surface: #0c0c0c;
+            --surface-elevated: #151515;
+            --surface-card: #111111;
+            --border-dim: #222222;
+            --border-bright: #383838;
+            --text-main: #f5f5f5;
+            --text-muted: #888888;
+            --nothing-red: #d71921;
+            --font-dot: 'Doto', monospace;
+            --font-body: 'Space Grotesk', -apple-system, sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-black);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+            background-size: 18px 18px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            overflow-x: hidden;
+            padding-bottom: 30px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-dim);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .red-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--nothing-red);
+            box-shadow: 0 0 10px var(--nothing-red);
+            animation: pulse-red 2s infinite;
+        }
+        .brand-text {
+            font-family: var(--font-dot);
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+        .clock {
+            font-family: var(--font-dot);
+            font-size: 1.45rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+
+        /* Master Mode Switcher (Nothing OS Segmented Bar) */
+        .mode-switcher-bar {
+            background: rgba(10, 10, 10, 0.9);
+            border-bottom: 1px solid var(--border-dim);
+            padding: 8px 16px;
+            position: sticky;
+            top: 49px;
+            z-index: 45;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .mode-switcher {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            background: var(--surface-card);
+            border: 1px solid var(--border-bright);
+            border-radius: 999px;
+            padding: 4px;
+            gap: 4px;
+        }
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            padding: 8px 0;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+        .mode-btn.active {
+            background: #ffffff;
+            color: #000000;
+            font-weight: 800;
+            box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+        }
+
+        /* Horizontal Queue Bar (Workshop Mode) */
+        .queue-strip-container {
+            background: rgba(8, 8, 8, 0.85);
+            border-bottom: 1px solid var(--border-dim);
+            padding: 10px 16px;
+            position: sticky;
+            top: 96px;
+            z-index: 40;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .queue-strip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        .queue-strip {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .queue-strip::-webkit-scrollbar { display: none; }
+
+        .chip-order {
+            flex-shrink: 0;
+            background: var(--surface-card);
+            border: 1px solid var(--border-bright);
+            border-radius: 999px;
+            padding: 7px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .chip-order:active { transform: scale(0.95); }
+        .chip-order.active {
+            background: #ffffff;
+            border-color: #ffffff;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.25);
+        }
+        .chip-order.active .chip-num { color: #000000; }
+        .chip-order.active .chip-sub { color: #555555; }
+        .chip-num {
+            font-family: var(--font-dot);
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+        .chip-sub {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        /* Main Workspace Container */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            padding: 16px;
+            max-width: 680px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Hero Order Card */
+        .active-hero {
+            background: rgba(17, 17, 17, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dim);
+            border-radius: 26px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .active-hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        }
+
+        .hero-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-dim);
+        }
+        .hero-num {
+            font-family: var(--font-dot);
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+            line-height: 1;
+        }
+        .hero-status-pill {
+            font-family: var(--font-mono);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-bright);
+            color: var(--text-muted);
+        }
+        .hero-status-pill.working {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
+        .hero-status-pill.paused {
+            background: rgba(215, 25, 33, 0.2);
+            color: #ff858d;
+            border-color: var(--nothing-red);
+        }
+
+        /* Material Box - Full Width, Unclipped */
+        .material-box {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-bright);
+            border-radius: 18px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+        }
+        .box-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .material-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        /* 2-Column Row for Recipe & Progress */
+        .spec-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .spec-box {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-dim);
+            border-radius: 18px;
+            padding: 12px 14px;
+        }
+        .spec-val-recipe {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .spec-val-progress {
+            font-family: var(--font-dot);
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        /* Client Row */
+        .client-box {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-dim);
+            border-radius: 14px;
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .client-name {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Giant Action Buttons */
+        .action-container {
+            margin-top: 16px;
+        }
+        .btn-giant {
+            width: 100%;
+            min-height: 72px;
+            border-radius: 999px;
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.15s;
+        }
+        .btn-giant:active { transform: scale(0.97); }
+
+        .btn-accept {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
+        }
+        .btn-ready {
+            background: #ffffff;
+            color: #000000;
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.25);
+        }
+        .btn-delivered {
+            background: var(--surface-elevated);
+            color: var(--text-muted);
+            border: 1px solid var(--border-bright);
+        }
+        .btn-mixer-start {
+            background: #ffffff;
+            color: #000000;
+        }
+        .btn-mixer-stop {
+            background: var(--nothing-red);
+            color: #ffffff;
+            box-shadow: 0 8px 30px rgba(215, 25, 33, 0.4);
+        }
+
+        /* Mixer Section */
+        .mixer-section {
+            background: rgba(17, 17, 17, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dim);
+            border-radius: 26px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .mixer-header {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .timer-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) 70px;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .preset-btn {
+            min-height: 48px;
+            background: var(--surface-elevated);
+            border: 1px solid var(--border-dim);
+            color: #ffffff;
+            border-radius: 999px;
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .preset-btn:active { transform: scale(0.95); }
+        .preset-btn.active {
+            border-color: #ffffff;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .countdown-display {
+            font-family: var(--font-dot);
+            font-size: 4.5rem;
+            font-weight: 900;
+            text-align: center;
+            color: #ffffff;
+            letter-spacing: 4px;
+            line-height: 1;
+            margin: 10px 0 16px;
+        }
+
+        /* Collapsible Delays */
+        .delays-collapsible {
+            margin-top: 16px;
+            border: 1px solid rgba(215, 25, 33, 0.3);
+            border-radius: 20px;
+            background: rgba(14, 14, 14, 0.85);
+            overflow: hidden;
+        }
+        .delays-toggle-btn {
+            width: 100%;
+            padding: 14px 18px;
+            background: transparent;
+            border: none;
+            color: #ff99a0;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .delays-body {
+            padding: 0 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .btn-delay-item {
+            width: 100%;
+            min-height: 48px;
+            background: var(--surface-elevated);
+            border: 1px solid rgba(215, 25, 33, 0.4);
+            border-radius: 14px;
+            color: #ff858d;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 10px 14px;
+            text-align: left;
+            transition: all 0.15s;
+        }
+        .btn-delay-item:active {
+            background: var(--nothing-red);
+            color: #ffffff;
+        }
+
+        .btn-resume {
+            width: 100%;
+            min-height: 64px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 999px;
+            font-family: var(--font-body);
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.2);
+            margin-top: 14px;
+        }
+
+        /* =========================================
+           DISPATCHER & ANALYTICS MODE (Mobile-First)
+           ========================================= */
+        .metrics-grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .metric-tile {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-dim);
+            border-radius: 20px;
+            padding: 16px;
+        }
+        .metric-tile-title {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .metric-tile-val {
+            font-family: var(--font-dot);
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #ffffff;
+            line-height: 1;
+        }
+        .metric-tile-sub {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        /* Order Cards List in Dispatcher */
+        .dispatcher-orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .disp-order-card {
+            background: rgba(18, 18, 18, 0.85);
+            border: 1px solid var(--border-dim);
+            border-radius: 20px;
+            padding: 16px;
+        }
+        .disp-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .disp-order-num {
+            font-family: var(--font-dot);
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #ffffff;
+        }
+        .disp-delay-pill {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(215, 25, 33, 0.15);
+            border: 1px solid var(--nothing-red);
+            color: #ff858d;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+        /* =========================================
+           CREATE ORDER QUICK FORM
+           ========================================= */
+        .form-card {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dim);
+            border-radius: 26px;
+            padding: 22px;
+        }
+        .form-title {
+            font-family: var(--font-dot);
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #ffffff;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-field {
+            margin-bottom: 14px;
+        }
+        .form-label {
+            display: block;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .form-input, .form-select {
+            width: 100%;
+            background: #000000;
+            border: 1px solid var(--border-bright);
+            border-radius: 14px;
+            padding: 12px 14px;
+            color: #ffffff;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .form-input:focus, .form-select:focus { border-color: #ffffff; }
+        .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .btn-create-submit {
+            width: 100%;
+            min-height: 60px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 999px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+        }
+        .btn-create-submit:active { transform: scale(0.97); }
+
+        @keyframes pulse-red {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="brand">
+            <div class="red-dot"></div>
+            <span class="brand-text">CERESIT // COMMAND</span>
+        </div>
+        <div id="live-clock" class="clock">00:00:00</div>
+    </div>
+
+    <!-- Mode Switcher (Unified 3-in-1 Control) -->
+    <div class="mode-switcher-bar">
+        <div class="mode-switcher">
+            <button id="mode-tab-workshop" class="mode-btn active" onclick="switchMode('workshop')">01. ЦЕХ</button>
+            <button id="mode-tab-dispatcher" class="mode-btn" onclick="switchMode('dispatcher')">02. ДИСПЕТЧЕР</button>
+            <button id="mode-tab-create" class="mode-btn" onclick="switchMode('create')">+ НОВЕ</button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         VIEW 1: WORKSHOP TERMINAL (Колірувальний цех)
+         ========================================== -->
+    <div id="view-workshop">
+        <!-- Sticky Horizontal Queue Bar -->
+        <div class="queue-strip-container">
+            <div class="queue-strip-header">
+                <span>ЧЕРГА ПАРТІЙ НА КОЛІРУВАННЯ</span>
+                <span id="queue-count-badge">[0]</span>
+            </div>
+            <div id="queue-strip" class="queue-strip">
+                <!-- Chips rendered by JS -->
+            </div>
+        </div>
+
+        <div class="workspace">
+            <div id="no-order-selected" style="margin: 40px auto; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.9rem;">
+                ОБЕРІТЬ ПАРТІЮ З ЧЕРГИ ЗВЕРХУ АБО СТВОРІТЬ НОВУ
+            </div>
+
+            <div id="order-view" style="display: none; flex-direction: column;">
+                <!-- Hero Order Card -->
+                <div class="active-hero">
+                    <div class="hero-top-row">
+                        <div id="hero-num" class="hero-num">#0000</div>
+                        <div id="hero-status-pill" class="hero-status-pill">PENDING</div>
+                    </div>
+
+                    <div class="card-stack">
+                        <!-- Material - Full Width, Unclipped -->
+                        <div class="material-box">
+                            <div class="box-label">МАТЕРІАЛ ДЛЯ КОЛІРУВАННЯ</div>
+                            <div id="hero-material" class="material-title">—</div>
+                        </div>
+
+                        <!-- 2-Col Recipe & Progress -->
+                        <div class="spec-row">
+                            <div class="spec-box">
+                                <div class="box-label">РЕЦЕПТ / КОЛІР</div>
+                                <div id="hero-color" class="spec-val-recipe">—</div>
+                            </div>
+                            <div class="spec-box">
+                                <div class="box-label">ПРОГРЕС ВІДЕР</div>
+                                <div id="hero-progress" class="spec-val-progress">0 / 0</div>
+                            </div>
+                        </div>
+
+                        <!-- Client / Driver -->
+                        <div class="client-box">
+                            <span class="box-label" style="margin: 0;">КЛІЄНТ:</span>
+                            <span id="hero-client" class="client-name">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stage 1: Accept Button -->
+                <div id="stage-accept" class="action-container" style="display: none;">
+                    <button class="btn-giant btn-accept" onclick="acceptOrder()">
+                        <span>01. ВЗЯТИ В РОБОТУ (РЕЦЕПТ В ЦЕХУ)</span>
+                    </button>
+                </div>
+
+                <!-- Stage 2: Mixer Controls -->
+                <div id="stage-mixing" class="mixer-section" style="display: none;">
+                    <div class="mixer-header">
+                        <span>ГІРОМІКСЕР // ВІДРО <span id="current-bucket-idx">1</span> З <span id="total-bucket-idx">5</span></span>
+                        <span id="mixer-status-indicator">ГОТОВИЙ</span>
+                    </div>
+
+                    <div class="timer-presets">
+                        <button class="preset-btn" onclick="setTimerSecs(60)">01M</button>
+                        <button class="preset-btn active" onclick="setTimerSecs(120)">02M</button>
+                        <button class="preset-btn" onclick="setTimerSecs(180)">03M</button>
+                        <button class="preset-btn" onclick="setTimerSecs(300)">05M</button>
+                        <button class="preset-btn" onclick="adjustTimer(30)">+30S</button>
+                    </div>
+
+                    <div id="countdown-clock" class="countdown-display">02:00</div>
+
+                    <button id="btn-mixer-toggle" class="btn-giant btn-mixer-start" onclick="toggleMixer()">
+                        <span>ЗАПУСТИТИ ЗМІШУВАННЯ</span>
+                    </button>
+                </div>
+
+                <!-- Stage 3: Ready for Pickup -->
+                <div id="stage-ready" class="action-container" style="display: none;">
+                    <button class="btn-giant btn-ready" onclick="markReady()">
+                        <span>ГОТОВО ДО ВИДАЧІ (ВІДПРАВИТИ WEB PUSH)</span>
+                    </button>
+                </div>
+
+                <!-- Stage 4: Archive Delivered -->
+                <div id="stage-archive" class="action-container" style="display: none;">
+                    <button class="btn-giant btn-delivered" onclick="markDelivered()">
+                        <span>ВОДІЙ ЗАБРАВ // ЗАКРИТИ В АРХІВ</span>
+                    </button>
+                </div>
+
+                <!-- Collapsible Delays Accordion -->
+                <div class="delays-collapsible">
+                    <button class="delays-toggle-btn" onclick="toggleDelaysAccordion()">
+                        <span>⚠️ ФІКСАЦІЯ ЗАТРИМКИ / ПРОСТОЮ</span>
+                        <span id="delays-chevron">▾</span>
+                    </button>
+                    <div id="delays-body" class="delays-body" style="display: none;">
+                        <button class="btn-delay-item" onclick="reportDelay('Очікування рецепта / корекції від офісу')">
+                            ● ОЧІКУВАННЯ РЕЦЕПТА З ОФІСУ
+                        </button>
+                        <button class="btn-delay-item" onclick="reportDelay('Відсутня потрібна база на складі')">
+                            ● НЕМАЄ БАЗИ НА СКЛАДІ
+                        </button>
+                        <button class="btn-delay-item" onclick="reportDelay('Технічна промивка дозатора / калібрування')">
+                            ● ПРОМИВКА / КАЛІБРУВАННЯ ДОЗАТОРА
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resume from Pause -->
+                <div id="resume-container" style="display: none;">
+                    <button class="btn-resume" onclick="resumeWork()">
+                        ВІДНОВИТИ РОБОТУ (ЗАКРИТИ ПРОСТІЙ)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         VIEW 2: DISPATCHER METRICS & AUDIT (Дашборд)
+         ========================================== -->
+    <div id="view-dispatcher" style="display: none;">
+        <div class="workspace">
+            <!-- 2x2 Metric Tiles -->
+            <div class="metrics-grid-2x2">
+                <div class="metric-tile">
+                    <div class="metric-tile-title">АКТИВНА ЧЕРГА</div>
+                    <div class="metric-tile-val" id="disp-active-count">0</div>
+                    <div class="metric-tile-sub" id="disp-mixing-sub">0 в міксері</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="metric-tile-title">ТОННАЖ ЗМІНИ</div>
+                    <div class="metric-tile-val" id="disp-tonnage">0 KG</div>
+                    <div class="metric-tile-sub" id="disp-buckets-sub">0 відер</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="metric-tile-title">ЗАТРИМКА ОФІСУ</div>
+                    <div class="metric-tile-val" id="disp-avg-delay">0 M</div>
+                    <div class="metric-tile-sub">Сер. час передачі</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="metric-tile-title">ГОТОВО НА РАМПІ</div>
+                    <div class="metric-tile-val" id="disp-ready-count">0</div>
+                    <div class="metric-tile-sub">Чекають водіїв</div>
+                </div>
+            </div>
+
+            <!-- Orders Cards List -->
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                <span>ЖУРНАЛ ЗАМОВЛЕНЬ</span>
+                <span>LIVE FEED</span>
+            </div>
+            <div id="disp-orders-list" class="dispatcher-orders-list">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         VIEW 3: CREATE NEW ORDER (Швидке створення)
+         ========================================== -->
+    <div id="view-create" style="display: none;">
+        <div class="workspace">
+            <div class="form-card">
+                <div class="form-title">
+                    <div class="red-dot"></div>
+                    <span>РЕЄСТРАЦІЯ НАКЛАДНОЇ</span>
+                </div>
+
+                <form onsubmit="handleCreateOrder(event)">
+                    <div class="form-field">
+                        <label class="form-label">НОМЕР НАКЛАДНОЇ / ЗАМОВЛЕННЯ</label>
+                        <input type="text" id="create-order-number" class="form-input" placeholder="#1043" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">КЛІЄНТ / ВОДІЙ</label>
+                        <input type="text" id="create-client-name" class="form-input" placeholder="БудСервіс (Василь)" required>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">МАТЕРІАЛ CERESIT</label>
+                        <select id="create-material" class="form-select">
+                            <option value="Ceresit CT 174 (1.5mm)">Ceresit CT 174 (1.5mm)</option>
+                            <option value="Ceresit CT 174 (2.0mm)">Ceresit CT 174 (2.0mm)</option>
+                            <option value="Ceresit CT 60 (1.5mm)">Ceresit CT 60 (1.5mm)</option>
+                            <option value="Ceresit CT 48 (Фасадна силіконова)">Ceresit CT 48 (Силіконова)</option>
+                            <option value="Ceresit CT 54 (Силікатна)">Ceresit CT 54 (Силікатна)</option>
+                            <option value="Ceresit CT 74 (Силіконова 1.5mm)">Ceresit CT 74 (Силіконова 1.5mm)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-2col">
+                        <div class="form-field">
+                            <label class="form-label">КІЛЬКІСТЬ ВІДЕР</label>
+                            <input type="number" id="create-total-buckets" class="form-input" min="1" max="200" value="5" required>
+                        </div>
+                        <div class="form-field">
+                            <label class="form-label">ВАГА ВІДРА</label>
+                            <select id="create-bucket-weight" class="form-select">
+                                <option value="25 кг">25 кг</option>
+                                <option value="15 кг">15 кг</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">РЕЦЕПТ / КОЛІР</label>
+                        <input type="text" id="create-color-code" class="form-input" placeholder="Nebraska 3 / Texas 4" required>
+                    </div>
+
+                    <button type="submit" class="btn-create-submit">СТВОРИТИ ТА ВІДПРАВИТИ В ЦЕХ</button>
+                </form>
+
+                <div id="create-success-box" style="display: none; margin-top: 16px; padding: 14px; background: #000; border: 1px solid var(--border-bright); border-radius: 16px;">
+                    <div style="font-family: var(--font-mono); font-size: 0.8rem; color: #ffffff; margin-bottom: 4px;">● ЗАМОВЛЕННЯ ЗАРЕЄСТРОВАНО!</div>
+                    <div id="create-track-url" style="font-family: var(--font-mono); font-size: 0.75rem; word-break: break-all; color: var(--text-muted);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let orders = [];
+        let activeOrderId = null;
+        let mixerSeconds = 120;
+        let mixerInterval = null;
+        let remainingSeconds = 120;
+        let isMixerRunning = false;
+        let delaysExpanded = false;
+        let currentMode = 'workshop';
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function vibrateDevice(pattern) {
+            try {
+                if ('vibrate' in navigator) navigator.vibrate(pattern);
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
+        function playBeep(freq, duration) {
+            vibrateDevice(35);
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
+        function playFinishAlarm() {
+            vibrateDevice([150, 80, 150, 80, 400]);
+            playBeep(880, 0.15);
+            setTimeout(() => playBeep(1100, 0.15), 200);
+            setTimeout(() => playBeep(1320, 0.4), 400);
+        }
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = now.toTimeString().split(' ')[0];
+        }, 1000);
+
+        function switchMode(mode) {
+            vibrateDevice(30);
+            currentMode = mode;
+            ['workshop', 'dispatcher', 'create'].forEach(m => {
+                document.getElementById(`mode-tab-${m}`).classList.toggle('active', m === mode);
+                document.getElementById(`view-${m}`).style.display = m === mode ? 'block' : 'none';
+            });
+            if (mode === 'dispatcher') renderDispatcherMetrics();
+        }
+
+        function toggleDelaysAccordion() {
+            vibrateDevice(25);
+            delaysExpanded = !delaysExpanded;
+            document.getElementById('delays-body').style.display = delaysExpanded ? 'flex' : 'none';
+            document.getElementById('delays-chevron').innerText = delaysExpanded ? '▴' : '▾';
+        }
+
+        async function fetchQueue() {
+            try {
+                const res = await fetch('/api/admin/orders');
+                if (res.ok) {
+                    orders = await res.json();
+                    renderQueue();
+                    renderDispatcherMetrics();
+                    if (activeOrderId) {
+                        const updated = orders.find(o => o.id === activeOrderId);
+                        if (updated) renderActiveOrder(updated);
+                    } else if (orders.length > 0) {
+                        const firstActive = orders.find(o => o.status !== 'Delivered');
+                        if (firstActive) selectOrder(firstActive.id);
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderQueue() {
+            const activeOrders = orders.filter(o => o.status !== 'Delivered');
+            document.getElementById('queue-count-badge').innerText = `[${activeOrders.length}]`;
+
+            const strip = document.getElementById('queue-strip');
+            strip.innerHTML = '';
+            activeOrders.forEach(order => {
+                const chip = document.createElement('div');
+                chip.className = 'chip-order' + (order.id === activeOrderId ? ' active' : '');
+                chip.onclick = () => selectOrder(order.id);
+
+                let shortStatus = order.status;
+                if (order.status === 'Mixing') shortStatus = `${order.buckets_completed + 1}/${order.total_buckets}`;
+                else if (order.status === 'TechCardPending') shortStatus = 'WAIT';
+                else if (order.status === 'Accepted') shortStatus = 'READY';
+                else if (order.status === 'Ready') shortStatus = 'RAMP';
+
+                chip.innerHTML = `
+                    <span class="chip-num">${order.order_number}</span>
+                    <span class="chip-sub">${shortStatus}</span>
+                `;
+                strip.appendChild(chip);
+            });
+        }
+
+        function selectOrder(id) {
+            vibrateDevice(30);
+            activeOrderId = id;
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                renderQueue();
+                renderActiveOrder(order);
+            }
+        }
+
+        function renderActiveOrder(o) {
+            document.getElementById('no-order-selected').style.display = 'none';
+            document.getElementById('order-view').style.display = 'flex';
+
+            document.getElementById('hero-num').innerText = o.order_number;
+            document.getElementById('hero-client').innerText = o.client_name;
+            document.getElementById('hero-material').innerText = o.material;
+            document.getElementById('hero-color').innerText = o.color_code;
+            document.getElementById('hero-progress').innerText = `${o.buckets_completed} / ${o.total_buckets}`;
+
+            const pill = document.getElementById('hero-status-pill');
+            pill.className = 'hero-status-pill';
+            pill.innerText = o.status;
+
+            const stageAccept = document.getElementById('stage-accept');
+            const stageMixing = document.getElementById('stage-mixing');
+            const stageReady = document.getElementById('stage-ready');
+            const stageArchive = document.getElementById('stage-archive');
+            const resumeContainer = document.getElementById('resume-container');
+
+            stageAccept.style.display = 'none';
+            stageMixing.style.display = 'none';
+            stageReady.style.display = 'none';
+            stageArchive.style.display = 'none';
+            resumeContainer.style.display = 'none';
+
+            if (o.status === 'Registered' || o.status === 'TechCardPending') {
+                stageAccept.style.display = 'block';
+                pill.innerText = 'ОЧІКУЄ ТЕХКАРТУ';
+            } else if (o.status === 'Accepted' || o.status === 'Mixing') {
+                pill.className = 'hero-status-pill working';
+                pill.innerText = 'У РОБОТІ';
+                stageMixing.style.display = 'block';
+                document.getElementById('current-bucket-idx').innerText = o.buckets_completed + 1;
+                document.getElementById('total-bucket-idx').innerText = o.total_buckets;
+
+                if (o.buckets_completed >= o.total_buckets) {
+                    stageReady.style.display = 'block';
+                }
+            } else if (o.status === 'Paused') {
+                pill.className = 'hero-status-pill paused';
+                pill.innerText = 'ПАУЗА: ' + (o.delay_reason || '');
+                resumeContainer.style.display = 'block';
+            } else if (o.status === 'Ready') {
+                pill.className = 'hero-status-pill working';
+                pill.innerText = 'ГОТОВО ДО ВИДАЧІ';
+                stageArchive.style.display = 'block';
+            }
+        }
+
+        function renderDispatcherMetrics() {
+            const active = orders.filter(o => o.status !== 'Delivered');
+            const mixing = orders.filter(o => o.status === 'Mixing');
+            const ready = orders.filter(o => o.status === 'Ready');
+
+            document.getElementById('disp-active-count').innerText = active.length;
+            document.getElementById('disp-mixing-sub').innerText = `${mixing.length} в міксері`;
+            document.getElementById('disp-ready-count').innerText = ready.length;
+
+            let totalKg = 0;
+            let totalBuckets = 0;
+            let totalOfficeDelayMins = 0;
+            let countAccepted = 0;
+
+            orders.forEach(o => {
+                const weight = o.bucket_weight.includes('15') ? 15 : 25;
+                totalKg += o.buckets_completed * weight;
+                totalBuckets += o.buckets_completed;
+
+                if (o.accepted_at && o.created_at) {
+                    const delayMins = Math.round((o.accepted_at - o.created_at) / 60000);
+                    totalOfficeDelayMins += delayMins;
+                    countAccepted++;
+                }
+            });
+
+            document.getElementById('disp-tonnage').innerText = `${totalKg} KG`;
+            document.getElementById('disp-buckets-sub').innerText = `${totalBuckets} відер заколіровано`;
+
+            const avgDelay = countAccepted > 0 ? Math.round(totalOfficeDelayMins / countAccepted) : 0;
+            document.getElementById('disp-avg-delay').innerText = `${avgDelay} M`;
+
+            // Render Orders Cards List
+            const list = document.getElementById('disp-orders-list');
+            list.innerHTML = '';
+            const now = Date.now();
+
+            orders.forEach(o => {
+                const card = document.createElement('div');
+                card.className = 'disp-order-card';
+
+                let delayHtml = '';
+                const timeSinceCreated = Math.round((now - o.created_at) / 60000);
+
+                if (!o.accepted_at && o.status !== 'Delivered') {
+                    if (timeSinceCreated > 15) {
+                        delayHtml = `<div class="disp-delay-pill">⚠️ ЗАВИСЛО: ${timeSinceCreated} хв в офісі!</div>`;
+                    } else {
+                        delayHtml = `<div style="font-family: var(--font-mono); color: var(--text-muted); font-size: 0.72rem; margin-top: 4px;">Створено ${timeSinceCreated}хв тому</div>`;
+                    }
+                } else if (o.accepted_at) {
+                    const officeTime = Math.round((o.accepted_at - o.created_at) / 60000);
+                    delayHtml = `<div style="font-family: var(--font-mono); color: #fff; font-size: 0.72rem; margin-top: 4px;">Передано за ${officeTime} хв</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="disp-top-row">
+                        <span class="disp-order-num">${o.order_number}</span>
+                        <span class="hero-status-pill">${o.status}</span>
+                    </div>
+                    <div style="font-size: 1rem; font-weight: 700; color: #fff;">${o.material}</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">${o.client_name} // ${o.color_code}</div>
+                    <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff; margin-top: 6px;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
+                    ${delayHtml}
+                    <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between;">
+                        <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ ВОДІЯ ↗</a>
+                        <span onclick="selectOrder('${o.id}'); switchMode('workshop');" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; cursor: pointer;">В ЦЕХ ➔</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        async function handleCreateOrder(e) {
+            e.preventDefault();
+            vibrateDevice([50, 50, 50]);
+
+            const payload = {
+                order_number: document.getElementById('create-order-number').value,
+                client_name: document.getElementById('create-client-name').value,
+                material: document.getElementById('create-material').value,
+                total_buckets: parseInt(document.getElementById('create-total-buckets').value),
+                bucket_weight: document.getElementById('create-bucket-weight').value,
+                color_code: document.getElementById('create-color-code').value,
+            };
+
+            const res = await fetch('/api/admin/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const created = await res.json();
+                document.getElementById('create-success-box').style.display = 'block';
+                document.getElementById('create-track-url').innerText = `https://cqd.yunexal.com/track/${created.token}`;
+
+                setTimeout(() => {
+                    document.getElementById('create-success-box').style.display = 'none';
+                    document.getElementById('create-order-number').value = '';
+                    document.getElementById('create-client-name').value = '';
+                    document.getElementById('create-color-code').value = '';
+                    fetchQueue();
+                    selectOrder(created.id);
+                    switchMode('workshop');
+                }, 1200);
+            }
+        }
+
+        async function acceptOrder() {
+            playBeep(660, 0.1);
+            await fetch(`/api/terminal/orders/${activeOrderId}/accept`, { method: 'POST' });
+            fetchQueue();
+        }
+
+        function setTimerSecs(secs) {
+            vibrateDevice(25);
+            if (isMixerRunning) return;
+            mixerSeconds = secs;
+            remainingSeconds = secs;
+            updateCountdownDisplay();
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function adjustTimer(delta) {
+            vibrateDevice(25);
+            if (isMixerRunning) return;
+            mixerSeconds = Math.max(30, mixerSeconds + delta);
+            remainingSeconds = mixerSeconds;
+            updateCountdownDisplay();
+        }
+
+        function updateCountdownDisplay() {
+            const m = String(Math.floor(remainingSeconds / 60)).padStart(2, '0');
+            const s = String(remainingSeconds % 60).padStart(2, '0');
+            document.getElementById('countdown-clock').innerText = `${m}:${s}`;
+        }
+
+        function toggleMixer() {
+            const btn = document.getElementById('btn-mixer-toggle');
+            if (!isMixerRunning) {
+                isMixerRunning = true;
+                vibrateDevice([80, 50, 80]);
+                btn.className = 'btn-giant btn-mixer-stop';
+                btn.innerHTML = '<span>ЗУПИНИТИ МІКСЕР</span>';
+                document.getElementById('mixer-status-indicator').innerText = 'MIXING...';
+                document.getElementById('mixer-status-indicator').style.color = '#ff858d';
+
+                fetch(`/api/terminal/orders/${activeOrderId}/start-mixing`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ duration_secs: mixerSeconds })
+                });
+
+                mixerInterval = setInterval(() => {
+                    remainingSeconds--;
+                    updateCountdownDisplay();
+                    if (remainingSeconds <= 0) {
+                        finishBucketMixing();
+                    }
+                }, 1000);
+            } else {
+                stopMixerUI();
+            }
+        }
+
+        async function finishBucketMixing() {
+            stopMixerUI();
+            playFinishAlarm();
+            await fetch(`/api/terminal/orders/${activeOrderId}/finish-bucket`, { method: 'POST' });
+            remainingSeconds = mixerSeconds;
+            updateCountdownDisplay();
+            fetchQueue();
+        }
+
+        function stopMixerUI() {
+            clearInterval(mixerInterval);
+            isMixerRunning = false;
+            const btn = document.getElementById('btn-mixer-toggle');
+            btn.className = 'btn-giant btn-mixer-start';
+            btn.innerHTML = '<span>ЗАПУСТИТИ ЗМІШУВАННЯ</span>';
+            document.getElementById('mixer-status-indicator').innerText = 'READY';
+            document.getElementById('mixer-status-indicator').style.color = 'var(--text-muted)';
+        }
+
+        async function markReady() {
+            playFinishAlarm();
+            await fetch(`/api/terminal/orders/${activeOrderId}/ready`, { method: 'POST' });
+            fetchQueue();
+        }
+
+        async function markDelivered() {
+            playBeep(440, 0.1);
+            await fetch(`/api/terminal/orders/${activeOrderId}/delivered`, { method: 'POST' });
+            activeOrderId = null;
+            document.getElementById('order-view').style.display = 'none';
+            document.getElementById('no-order-selected').style.display = 'block';
+            fetchQueue();
+        }
+
+        async function reportDelay(reason) {
+            playBeep(330, 0.2);
+            await fetch(`/api/terminal/orders/${activeOrderId}/pause`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ reason })
+            });
+            toggleDelaysAccordion();
+            fetchQueue();
+        }
+
+        async function resumeWork() {
+            playBeep(660, 0.1);
+            await fetch(`/api/terminal/orders/${activeOrderId}/resume`, { method: 'POST' });
+            fetchQueue();
+        }
+
+        // Initialize mode based on URL or default
+        if (window.location.pathname.includes('dispatcher')) {
+            switchMode('dispatcher');
+        }
+
+        fetchQueue();
+        setInterval(fetchQueue, 3000);
+    </script>
+</body>
+</html>
