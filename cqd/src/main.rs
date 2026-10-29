@@ -1,3 +1,5 @@
+mod db;
+
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -20,7 +22,7 @@ use uuid::Uuid;
 struct Asset;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-enum OrderStatus {
+pub enum OrderStatus {
     Registered,
     TechCardPending,
     Accepted,
@@ -30,85 +32,182 @@ enum OrderStatus {
     Delivered,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct OrderEvent {
-    timestamp: i64,
-    event_type: String,
-    actor: String,
-    details: Option<String>,
+impl OrderStatus {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            OrderStatus::Registered => "Registered",
+            OrderStatus::TechCardPending => "TechCardPending",
+            OrderStatus::Accepted => "Accepted",
+            OrderStatus::Mixing => "Mixing",
+            OrderStatus::Paused => "Paused",
+            OrderStatus::Ready => "Ready",
+            OrderStatus::Delivered => "Delivered",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Self {
+        match s {
+            "Registered" => OrderStatus::Registered,
+            "Accepted" => OrderStatus::Accepted,
+            "Mixing" => OrderStatus::Mixing,
+            "Paused" => OrderStatus::Paused,
+            "Ready" => OrderStatus::Ready,
+            "Delivered" => OrderStatus::Delivered,
+            _ => OrderStatus::TechCardPending,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct Order {
-    id: String,
-    order_number: String,
-    client_name: String,
-    material: String,
-    color_code: String,
-    base: Option<String>,
-    total_buckets: u32,
-    bucket_weight: String,
-    buckets_completed: u32,
-    status: OrderStatus,
-    delay_reason: Option<String>,
-    token: String,
-    created_at: i64,
-    accepted_at: Option<i64>,
-    mixing_started_at: Option<i64>,
-    mixing_duration_secs: Option<u64>,
-    ready_at: Option<i64>,
-    delivered_at: Option<i64>,
-    events: Vec<OrderEvent>,
+pub struct OrderEvent {
+    pub timestamp: i64,
+    pub iso_time: String,
+    pub event_type: String,
+    pub actor: String,
+    pub details: Option<String>,
+    pub prev_hash: String,
+    pub signature: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct PushKeys {
-    p256dh: String,
-    auth: String,
+pub struct Order {
+    pub id: String,
+    pub order_number: String,
+    pub client_name: String,
+    pub material: String,
+    pub color_code: String,
+    pub base: Option<String>,
+    pub total_buckets: u32,
+    pub bucket_weight: String,
+    pub buckets_completed: u32,
+    pub status: OrderStatus,
+    pub delay_reason: Option<String>,
+    pub token: String,
+    pub created_at: i64,
+    pub accepted_at: Option<i64>,
+    pub mixing_started_at: Option<i64>,
+    pub mixing_duration_secs: Option<u64>,
+    pub ready_at: Option<i64>,
+    pub delivered_at: Option<i64>,
+    pub is_archived: bool,
+    pub events: Vec<OrderEvent>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct PushSubscription {
-    endpoint: String,
-    keys: PushKeys,
+pub struct PushKeys {
+    pub p256dh: String,
+    pub auth: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct CreateOrderRequest {
-    order_number: String,
-    client_name: String,
-    material: String,
-    total_buckets: u32,
-    bucket_weight: String,
-    color_code: String,
-    base: Option<String>,
+pub struct PushSubscription {
+    pub endpoint: String,
+    pub keys: PushKeys,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct StartMixingRequest {
-    duration_secs: u64,
+pub struct CreateOrderRequest {
+    pub order_number: String,
+    pub client_name: String,
+    pub material: String,
+    pub total_buckets: u32,
+    pub bucket_weight: String,
+    pub color_code: String,
+    pub base: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct PauseRequest {
-    reason: String,
+pub struct StartMixingRequest {
+    pub duration_secs: u64,
 }
 
-struct AppState {
-    orders: HashMap<String, Order>,
-    token_to_id: HashMap<String, String>,
-    push_subs: HashMap<String, Vec<PushSubscription>>,
-    vapid_public_key: String,
-    vapid_private_key: String,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PauseRequest {
+    pub reason: String,
 }
 
-type SharedState = Arc<RwLock<AppState>>;
+pub struct AppState {
+    pub db: std::sync::Mutex<rusqlite::Connection>,
+    pub orders: HashMap<String, Order>,
+    pub token_to_id: HashMap<String, String>,
+    pub push_subs: HashMap<String, Vec<PushSubscription>>,
+    pub vapid_public_key: String,
+    pub vapid_private_key: String,
+    pub signing_secret: Vec<u8>,
+    pub last_event_hash: String,
+}
+
+impl AppState {
+    pub fn record_event(
+        &mut self,
+        order_id: &str,
+        event_type: &str,
+        actor: &str,
+        details: Option<&str>,
+    ) -> Result<OrderEvent, StatusCode> {
+        let &mut AppState {
+            ref db,
+            ref signing_secret,
+            ref mut last_event_hash,
+            ..
+        } = self;
+        let mut db_conn = db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::record_event(
+            &mut db_conn,
+            signing_secret,
+            last_event_hash,
+            order_id,
+            event_type,
+            actor,
+            details,
+        )
+        .map_err(|e| {
+            eprintln!("[SQLite Error] record_event failed: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
+    }
+
+    pub fn create_order(
+        &mut self,
+        order: Order,
+        actor: &str,
+        details: Option<&str>,
+    ) -> Result<Order, StatusCode> {
+        let &mut AppState {
+            ref db,
+            ref signing_secret,
+            ref mut last_event_hash,
+            ..
+        } = self;
+        let mut db_conn = db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::create_order_with_event(
+            &mut db_conn,
+            signing_secret,
+            last_event_hash,
+            order,
+            actor,
+            details,
+        )
+        .map_err(|e| {
+            eprintln!("[SQLite Error] create_order_with_event failed: {:?}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })
+    }
+}
+
+pub type SharedState = Arc<RwLock<AppState>>;
 
 fn get_embedded_file(path: &str, content_type: &str) -> Response {
     match Asset::get(path) {
         Some(content) => {
             let mut headers = HeaderMap::new();
             headers.insert(header::CONTENT_TYPE, content_type.parse().unwrap());
+            headers.insert(
+                header::CACHE_CONTROL,
+                "no-cache, no-store, must-revalidate".parse().unwrap(),
+            );
+            headers.insert(header::PRAGMA, "no-cache".parse().unwrap());
+            headers.insert(header::EXPIRES, "0".parse().unwrap());
             (StatusCode::OK, headers, content.data).into_response()
         }
         None => (StatusCode::NOT_FOUND, "File Not Found").into_response(),
@@ -119,11 +218,7 @@ fn get_embedded_file(path: &str, content_type: &str) -> Response {
 // PUBLIC HANDLERS (PORT 8080)
 // ==========================================
 
-async fn public_queue_page() -> Response {
-    get_embedded_file("public_queue.html", "text/html; charset=utf-8")
-}
-
-#[derive(Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct PublicOrderSummary {
     order_number: String,
     client_name: String,
@@ -143,7 +238,7 @@ async fn public_get_queue(State(state): State<SharedState>) -> Json<Vec<PublicOr
     let mut list: Vec<PublicOrderSummary> = lock
         .orders
         .values()
-        .filter(|o| o.status != OrderStatus::Delivered)
+        .filter(|o| !o.is_archived && o.status != OrderStatus::Delivered)
         .map(|o| PublicOrderSummary {
             order_number: o.order_number.clone(),
             client_name: o.client_name.clone(),
@@ -160,6 +255,10 @@ async fn public_get_queue(State(state): State<SharedState>) -> Json<Vec<PublicOr
         .collect();
     list.sort_by(|a, b| b.created_at.cmp(&a.created_at));
     Json(list)
+}
+
+async fn public_queue_page() -> Response {
+    get_embedded_file("public_queue.html", "text/html; charset=utf-8")
 }
 
 async fn public_tracker_page(Path(_token): Path<String>) -> Response {
@@ -201,26 +300,22 @@ async fn public_subscribe_push(
     Json(sub): Json<PushSubscription>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order_id = lock
-        .token_to_id
-        .get(&token)
-        .ok_or(StatusCode::NOT_FOUND)?
-        .clone();
+    let order_id = lock.token_to_id.get(&token).cloned().ok_or(StatusCode::NOT_FOUND)?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let _ = db::save_push_subscription(&mut db_conn, &order_id, &sub);
+    }
 
     lock.push_subs.entry(order_id).or_default().push(sub);
-    println!("[WebPush] New subscription registered for token {}", token);
     Ok(StatusCode::OK)
 }
 
-// Rickroll Decoy Handler: Direct 301 redirect with autoplay
 async fn rickroll_decoy_handler() -> Response {
     (
         StatusCode::MOVED_PERMANENTLY,
-        [(
-            header::LOCATION,
-            "https://www.youtube.com/watch?v=dQw4w9WgXcQ&autoplay=1",
-        )],
-        "Moved Permanently",
+        [(header::LOCATION, "https://www.youtube.com/watch?v=dQw4w9WgXcQ&autoplay=1")],
+        "301 Redirecting...",
     )
         .into_response()
 }
@@ -248,20 +343,27 @@ async fn local_dispatcher_page() -> Response {
 
 async fn local_list_orders(State(state): State<SharedState>) -> Json<Vec<Order>> {
     let lock = state.read().await;
-    let mut list: Vec<Order> = lock.orders.values().cloned().collect();
+    let mut list: Vec<Order> = lock.orders.values().filter(|o| !o.is_archived).cloned().collect();
     list.sort_by(|a, b| b.created_at.cmp(&a.created_at));
     Json(list)
+}
+
+async fn local_get_archive(State(state): State<SharedState>) -> Result<Json<Vec<Order>>, StatusCode> {
+    let lock = state.read().await;
+    let db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let archived = db::load_archived_orders(&db_conn, 100).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Json(archived))
 }
 
 async fn local_create_order(
     State(state): State<SharedState>,
     Json(req): Json<CreateOrderRequest>,
-) -> Json<Order> {
+) -> Result<Json<Order>, StatusCode> {
     let mut lock = state.write().await;
     let id = Uuid::new_v4().to_string();
     let token = Uuid::new_v4().simple().to_string();
-
     let now = Utc::now().timestamp_millis();
+
     let order = Order {
         id: id.clone(),
         order_number: req.order_number.clone(),
@@ -281,18 +383,20 @@ async fn local_create_order(
         mixing_duration_secs: None,
         ready_at: None,
         delivered_at: None,
-        events: vec![OrderEvent {
-            timestamp: now,
-            event_type: "CreatedInOffice".to_string(),
-            actor: "Офіс".to_string(),
-            details: Some(format!("Накладна {}", req.order_number)),
-        }],
+        is_archived: false,
+        events: vec![],
     };
 
+    let persisted_order = lock.create_order(
+        order,
+        "Офіс",
+        Some(&format!("Накладна {}", req.order_number)),
+    )?;
+
     lock.token_to_id.insert(token, id.clone());
-    lock.orders.insert(id, order.clone());
-    println!("[Order] Created: #{} ({})", order.order_number, order.id);
-    Json(order)
+    lock.orders.insert(id, persisted_order.clone());
+    println!("[Order] Created & Persisted to SQLite: #{} ({})", persisted_order.order_number, persisted_order.id);
+    Ok(Json(persisted_order))
 }
 
 async fn local_accept_order(
@@ -300,17 +404,36 @@ async fn local_accept_order(
     State(state): State<SharedState>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order = lock.orders.get_mut(&id).ok_or(StatusCode::NOT_FOUND)?;
+    if !lock.orders.contains_key(&id) {
+        return Err(StatusCode::NOT_FOUND);
+    }
     let now = Utc::now().timestamp_millis();
 
+    let event = lock.record_event(
+        &id,
+        "AcceptedByColorist",
+        "Колорист",
+        Some("Техкарту отримано, замовлення прийнято в роботу"),
+    )?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::update_order_status(
+            &mut db_conn,
+            &id,
+            &OrderStatus::Accepted,
+            Some(now),
+            None,
+            None,
+            false,
+        )
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    let order = lock.orders.get_mut(&id).unwrap();
     order.status = OrderStatus::Accepted;
     order.accepted_at = Some(now);
-    order.events.push(OrderEvent {
-        timestamp: now,
-        event_type: "AcceptedByColorist".to_string(),
-        actor: "Колорист".to_string(),
-        details: Some("Техкарту отримано, замовлення прийнято в роботу".to_string()),
-    });
+    order.events.push(event);
 
     println!("[Order] Accepted by operator: {}", order.order_number);
     Ok(StatusCode::OK)
@@ -322,23 +445,39 @@ async fn local_start_mixing(
     Json(req): Json<StartMixingRequest>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order = lock.orders.get_mut(&id).ok_or(StatusCode::NOT_FOUND)?;
+    let (buckets_completed, total_buckets) = {
+        let order = lock.orders.get(&id).ok_or(StatusCode::NOT_FOUND)?;
+        (order.buckets_completed, order.total_buckets)
+    };
     let now = Utc::now().timestamp_millis();
+    let details = format!(
+        "Відро {}/{} (тривалість {}с)",
+        buckets_completed + 1,
+        total_buckets,
+        req.duration_secs
+    );
 
+    let event = lock.record_event(&id, "MixingStarted", "Гіроміксер", Some(&details))?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::update_order_status(
+            &mut db_conn,
+            &id,
+            &OrderStatus::Mixing,
+            None,
+            None,
+            None,
+            false,
+        )
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    let order = lock.orders.get_mut(&id).unwrap();
     order.status = OrderStatus::Mixing;
     order.mixing_started_at = Some(now);
     order.mixing_duration_secs = Some(req.duration_secs);
-    order.events.push(OrderEvent {
-        timestamp: now,
-        event_type: "MixingStarted".to_string(),
-        actor: "Гіроміксер".to_string(),
-        details: Some(format!(
-            "Відро {}/{} (тривалість {}с)",
-            order.buckets_completed + 1,
-            order.total_buckets,
-            req.duration_secs
-        )),
-    });
+    order.events.push(event);
 
     Ok(StatusCode::OK)
 }
@@ -348,23 +487,30 @@ async fn local_finish_bucket(
     State(state): State<SharedState>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order = lock.orders.get_mut(&id).ok_or(StatusCode::NOT_FOUND)?;
-    let now = Utc::now().timestamp_millis();
+    let (new_completed, total_buckets) = {
+        let order = lock.orders.get(&id).ok_or(StatusCode::NOT_FOUND)?;
+        (order.buckets_completed + 1, order.total_buckets)
+    };
 
-    order.buckets_completed += 1;
-    order.events.push(OrderEvent {
-        timestamp: now,
-        event_type: "BucketFinished".to_string(),
-        actor: "Гіроміксер".to_string(),
-        details: Some(format!(
-            "Відро {}/{} завершено",
-            order.buckets_completed, order.total_buckets
-        )),
-    });
+    let new_status = if new_completed >= total_buckets {
+        OrderStatus::Accepted
+    } else {
+        OrderStatus::Mixing
+    };
 
-    if order.buckets_completed >= order.total_buckets {
-        order.status = OrderStatus::Accepted; // ready to be marked ready
+    let details = format!("Відро {}/{} завершено", new_completed, total_buckets);
+    let event = lock.record_event(&id, "BucketFinished", "Гіроміксер", Some(&details))?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::update_order_buckets(&mut db_conn, &id, new_completed, &new_status)
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
     }
+
+    let order = lock.orders.get_mut(&id).unwrap();
+    order.buckets_completed = new_completed;
+    order.status = new_status;
+    order.events.push(event);
 
     Ok(StatusCode::OK)
 }
@@ -375,17 +521,22 @@ async fn local_pause_order(
     Json(req): Json<PauseRequest>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order = lock.orders.get_mut(&id).ok_or(StatusCode::NOT_FOUND)?;
-    let now = Utc::now().timestamp_millis();
+    if !lock.orders.contains_key(&id) {
+        return Err(StatusCode::NOT_FOUND);
+    }
 
+    let event = lock.record_event(&id, "DelayPause", "Колорист", Some(&req.reason))?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::update_order_pause(&mut db_conn, &id, &OrderStatus::Paused, Some(&req.reason))
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    let order = lock.orders.get_mut(&id).unwrap();
     order.status = OrderStatus::Paused;
     order.delay_reason = Some(req.reason.clone());
-    order.events.push(OrderEvent {
-        timestamp: now,
-        event_type: "DelayPause".to_string(),
-        actor: "Колорист".to_string(),
-        details: Some(req.reason),
-    });
+    order.events.push(event);
 
     println!("[Order] Delay recorded: {} - {:?}", order.order_number, order.delay_reason);
     Ok(StatusCode::OK)
@@ -396,17 +547,22 @@ async fn local_resume_order(
     State(state): State<SharedState>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order = lock.orders.get_mut(&id).ok_or(StatusCode::NOT_FOUND)?;
-    let now = Utc::now().timestamp_millis();
+    if !lock.orders.contains_key(&id) {
+        return Err(StatusCode::NOT_FOUND);
+    }
 
+    let event = lock.record_event(&id, "DelayResumed", "Колорист", Some("Роботу відновлено після затримки"))?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::update_order_pause(&mut db_conn, &id, &OrderStatus::Accepted, None)
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    let order = lock.orders.get_mut(&id).unwrap();
     order.status = OrderStatus::Accepted;
     order.delay_reason = None;
-    order.events.push(OrderEvent {
-        timestamp: now,
-        event_type: "DelayResumed".to_string(),
-        actor: "Колорист".to_string(),
-        details: Some("Роботу відновлено після затримки".to_string()),
-    });
+    order.events.push(event);
 
     Ok(StatusCode::OK)
 }
@@ -417,22 +573,39 @@ async fn local_mark_ready(
 ) -> Result<StatusCode, StatusCode> {
     let (subs, order_num, material, buckets) = {
         let mut lock = state.write().await;
-        let order = lock.orders.get_mut(&id).ok_or(StatusCode::NOT_FOUND)?;
+        let (order_num, material, buckets) = {
+            let order = lock.orders.get(&id).ok_or(StatusCode::NOT_FOUND)?;
+            (order.order_number.clone(), order.material.clone(), order.total_buckets)
+        };
         let now = Utc::now().timestamp_millis();
 
+        let event = lock.record_event(
+            &id,
+            "ReadyForPickup",
+            "Колорист",
+            Some("Усі відра заколіровано, продукція на рампі"),
+        )?;
+
+        {
+            let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            db::update_order_status(
+                &mut db_conn,
+                &id,
+                &OrderStatus::Ready,
+                None,
+                Some(now),
+                None,
+                false,
+            )
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        }
+
+        let subs = lock.push_subs.get(&id).cloned().unwrap_or_default();
+        let order = lock.orders.get_mut(&id).unwrap();
         order.status = OrderStatus::Ready;
         order.ready_at = Some(now);
-        order.events.push(OrderEvent {
-            timestamp: now,
-            event_type: "ReadyForPickup".to_string(),
-            actor: "Колорист".to_string(),
-            details: Some("Усі відра заколіровано, продукція на рампі".to_string()),
-        });
+        order.events.push(event);
 
-        let order_num = order.order_number.clone();
-        let material = order.material.clone();
-        let buckets = order.total_buckets;
-        let subs = lock.push_subs.get(&id).cloned().unwrap_or_default();
         (subs, order_num, material, buckets)
     };
 
@@ -458,19 +631,40 @@ async fn local_mark_delivered(
     State(state): State<SharedState>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
-    let order = lock.orders.get_mut(&id).ok_or(StatusCode::NOT_FOUND)?;
+    let order_num = {
+        let order = lock.orders.get(&id).ok_or(StatusCode::NOT_FOUND)?;
+        order.order_number.clone()
+    };
     let now = Utc::now().timestamp_millis();
 
+    let event = lock.record_event(
+        &id,
+        "DeliveredToDriver",
+        "Колорист",
+        Some("Партія видана водію, замовлення закрито в архів"),
+    )?;
+
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        db::update_order_status(
+            &mut db_conn,
+            &id,
+            &OrderStatus::Delivered,
+            None,
+            None,
+            Some(now),
+            true, // is_archived = true
+        )
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    let order = lock.orders.get_mut(&id).unwrap();
     order.status = OrderStatus::Delivered;
     order.delivered_at = Some(now);
-    order.events.push(OrderEvent {
-        timestamp: now,
-        event_type: "DeliveredToDriver".to_string(),
-        actor: "Колорист".to_string(),
-        details: Some("Партія видана водію, замовлення закрито в архів".to_string()),
-    });
+    order.is_archived = true;
+    order.events.push(event);
 
-    println!("[Order] Delivered & Archived: #{}", order.order_number);
+    println!("[Order] Delivered & Archived to SQLite: #{}", order_num);
     Ok(StatusCode::OK)
 }
 
@@ -479,10 +673,14 @@ async fn local_delete_order(
     State(state): State<SharedState>,
 ) -> Result<StatusCode, StatusCode> {
     let mut lock = state.write().await;
+    {
+        let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        let _ = db::delete_order(&mut db_conn, &id);
+    }
     if let Some(order) = lock.orders.remove(&id) {
         lock.token_to_id.remove(&order.token);
         lock.push_subs.remove(&id);
-        println!("[Order] DELETED order: #{} ({})", order.order_number, id);
+        println!("[Order] DELETED order from SQLite and RAM: #{} ({})", order.order_number, id);
         Ok(StatusCode::OK)
     } else {
         Err(StatusCode::NOT_FOUND)
@@ -550,6 +748,31 @@ async fn main() {
     println!("  Autonomous Production & Dispatch System");
     println!("==================================================");
 
+    // 1. Initialize SQLite Database
+    let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| {
+        if std::path::Path::new("/var/lib/cqd").exists() {
+            "/var/lib/cqd/cqd.db".to_string()
+        } else {
+            "./cqd.db".to_string()
+        }
+    });
+
+    let (conn, signing_secret, last_event_hash) = db::init_db(&db_path)
+        .expect("Failed to initialize SQLite persistent database");
+
+    // Load active orders and push subscriptions from SQLite
+    let active_orders = db::load_active_orders(&conn).unwrap_or_default();
+    let mut token_to_id = HashMap::new();
+    for o in active_orders.values() {
+        token_to_id.insert(o.token.clone(), o.id.clone());
+    }
+    let push_subs = db::load_push_subscriptions(&conn).unwrap_or_default();
+    println!(
+        "[SQLite] Loaded {} active order(s) and {} push subscription(s) from persistent storage.",
+        active_orders.len(),
+        push_subs.len()
+    );
+
     // Generate or use VAPID keys
     let vapid_public_key = std::env::var("VAPID_PUBLIC_KEY").unwrap_or_else(|_| {
         "BCg27wQn0kUjA6w031uL3oOvdT64g_lD4w82tF1sI0_eY2QoR2e_4o9M7w9K1yX2m4Q4U4y2k4u8u4_k2=".to_string()
@@ -559,11 +782,14 @@ async fn main() {
     });
 
     let state: SharedState = Arc::new(RwLock::new(AppState {
-        orders: HashMap::new(),
-        token_to_id: HashMap::new(),
-        push_subs: HashMap::new(),
+        db: std::sync::Mutex::new(conn),
+        orders: active_orders,
+        token_to_id,
+        push_subs,
         vapid_public_key,
         vapid_private_key,
+        signing_secret,
+        last_event_hash,
     }));
 
     // ----------------------------------------------------
@@ -591,6 +817,7 @@ async fn main() {
         .route("/dispatcher", get(local_dispatcher_page))
         .route("/admin", get(local_dispatcher_page))
         .route("/api/admin/orders", get(local_list_orders).post(local_create_order))
+        .route("/api/admin/archive", get(local_get_archive))
         .route("/api/admin/orders/{id}", delete(local_delete_order))
         .route("/api/terminal/orders/{id}/delete", post(local_delete_order))
         .route("/api/terminal/orders/{id}/accept", post(local_accept_order))

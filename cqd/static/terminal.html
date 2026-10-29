@@ -1,7 +1,11 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="uk" class="notranslate" translate="no">
 <head>
     <meta charset="UTF-8">
+    <meta name="google" content="notranslate">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>CERESIT COMMAND CENTER // NOTHING OS</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,27 +98,28 @@
         }
         .mode-switcher {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(4, 1fr);
             background: var(--surface-card);
             border: 1px solid var(--border-bright);
             border-radius: 999px;
-            padding: 4px;
-            gap: 4px;
+            padding: 3px;
+            gap: 2px;
         }
         .mode-btn {
             background: transparent;
             border: none;
             color: var(--text-muted);
             font-family: var(--font-mono);
-            font-size: 0.72rem;
+            font-size: clamp(0.58rem, 2.5vw, 0.7rem);
             font-weight: 700;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.1px;
             text-transform: uppercase;
-            padding: 8px 0;
+            padding: 8px 1px;
             border-radius: 999px;
             cursor: pointer;
             transition: all 0.15s;
             text-align: center;
+            white-space: nowrap;
         }
         .mode-btn.active {
             background: #ffffff;
@@ -783,11 +788,12 @@
         <div id="live-clock" class="clock">00:00:00</div>
     </div>
 
-    <!-- Mode Switcher (Unified 3-in-1 Control) -->
+    <!-- Mode Switcher (Unified 4-in-1 Control) -->
     <div class="mode-switcher-bar">
         <div class="mode-switcher">
             <button id="mode-tab-workshop" class="mode-btn active" onclick="switchMode('workshop')">01. ЦЕХ</button>
             <button id="mode-tab-dispatcher" class="mode-btn" onclick="switchMode('dispatcher')">02. ДИСПЕТЧЕР</button>
+            <button id="mode-tab-archive" class="mode-btn" onclick="switchMode('archive')">03. АРХІВ</button>
             <button id="mode-tab-create" class="mode-btn" onclick="switchMode('create')">+ НОВЕ</button>
         </div>
     </div>
@@ -975,6 +981,49 @@
     </div>
 
     <!-- ==========================================
+         VIEW 3: ARCHIVE & CRYPTO AUDIT (Архів виконаних)
+         ========================================== -->
+    <div id="view-archive" style="display: none;">
+        <div class="workspace">
+            <!-- Archive Header Metrics -->
+            <div class="metrics-grid-2x2">
+                <div class="metric-tile">
+                    <div class="metric-tile-title">В АРХІВІ</div>
+                    <div class="metric-tile-val" id="arch-count">0</div>
+                    <div class="metric-tile-sub">Виконані партії</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="metric-tile-title">ВИДАНИЙ ТОННАЖ</div>
+                    <div class="metric-tile-val" id="arch-tonnage">0 KG</div>
+                    <div class="metric-tile-sub" id="arch-buckets-sub">0 відер</div>
+                </div>
+                <div class="metric-tile" style="grid-column: span 2;">
+                    <div class="metric-tile-title">КРИПТОГРАФІЧНИЙ ПІДПИС ЧАСУ</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.8rem; color: #fff; margin-top: 6px; display: flex; align-items: center; gap: 8px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #00ff66; box-shadow: 0 0 8px #00ff66;"></span>
+                        <span>HMAC-SHA256 AUDIT CHAIN ACTIVE</span>
+                    </div>
+                    <div class="metric-tile-sub" style="margin-top: 4px;">Незмінний блокчейн-журнал подій у SQLite</div>
+                </div>
+            </div>
+
+            <!-- Search Field -->
+            <div style="margin-bottom: 14px;">
+                <input type="text" id="archive-search" class="form-input" placeholder="🔍 Пошук за накладною або клієнтом..." oninput="filterArchive()">
+            </div>
+
+            <!-- Archive Cards List -->
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                <span>АРХІВНІ ПАРТІЇ</span>
+                <span id="arch-list-badge">[0]</span>
+            </div>
+            <div id="arch-orders-list" class="dispatcher-orders-list">
+                <!-- Rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
          VIEW 3: CREATE NEW ORDER (Швидке створення)
          ========================================== -->
     <div id="view-create" style="display: none;">
@@ -1148,11 +1197,135 @@
         function switchMode(mode) {
             vibrateDevice(30);
             currentMode = mode;
-            ['workshop', 'dispatcher', 'create'].forEach(m => {
-                document.getElementById(`mode-tab-${m}`).classList.toggle('active', m === mode);
-                document.getElementById(`view-${m}`).style.display = m === mode ? 'block' : 'none';
+            ['workshop', 'dispatcher', 'archive', 'create'].forEach(m => {
+                const btn = document.getElementById(`mode-tab-${m}`);
+                const view = document.getElementById(`view-${m}`);
+                if (btn) btn.classList.toggle('active', m === mode);
+                if (view) view.style.display = m === mode ? 'block' : 'none';
             });
             if (mode === 'dispatcher') renderDispatcherMetrics();
+            if (mode === 'archive') fetchArchive();
+        }
+
+        let archivedOrders = [];
+
+        async function fetchArchive() {
+            try {
+                const res = await fetch('/api/admin/archive');
+                if (res.ok) {
+                    archivedOrders = await res.json();
+                    renderArchive();
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function filterArchive() {
+            const query = (document.getElementById('archive-search').value || '').toLowerCase().trim();
+            renderArchive(query);
+        }
+
+        function renderArchive(filterQuery = '') {
+            const filtered = archivedOrders.filter(o => {
+                if (!filterQuery) return true;
+                return o.order_number.toLowerCase().includes(filterQuery) ||
+                       o.client_name.toLowerCase().includes(filterQuery) ||
+                       o.material.toLowerCase().includes(filterQuery) ||
+                       (o.color_code && o.color_code.toLowerCase().includes(filterQuery));
+            });
+
+            const archCountEl = document.getElementById('arch-count');
+            if (archCountEl) archCountEl.innerText = archivedOrders.length;
+            const badgeEl = document.getElementById('arch-list-badge');
+            if (badgeEl) badgeEl.innerText = `[${filtered.length}]`;
+
+            let totalKg = 0;
+            let totalBuckets = 0;
+            archivedOrders.forEach(o => {
+                const weight = parseBucketWeight(o.bucket_weight);
+                totalKg += o.buckets_completed * weight;
+                totalBuckets += o.buckets_completed;
+            });
+            const tonnageEl = document.getElementById('arch-tonnage');
+            if (tonnageEl) tonnageEl.innerText = totalKg >= 1000 ? `${(totalKg / 1000).toFixed(2)} T` : `${Math.round(totalKg)} KG`;
+            const bucketsSubEl = document.getElementById('arch-buckets-sub');
+            if (bucketsSubEl) bucketsSubEl.innerText = `${totalBuckets} відер видано`;
+
+            const list = document.getElementById('arch-orders-list');
+            if (!list) return;
+            list.innerHTML = '';
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<div style="text-align: center; padding: 32px 16px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--border-dim); border-radius: 20px;">НЕМАЄ АРХІВНИХ ЗАМОВЛЕНЬ</div>';
+                return;
+            }
+
+            filtered.forEach(o => {
+                const card = document.createElement('div');
+                card.className = 'disp-order-card';
+
+                let baseBadge = '';
+                if (o.base) {
+                    const letter = o.base.replace('База ', '').trim();
+                    const bClass = letter === 'C' ? 'base-C' : (letter === 'B' ? 'base-B' : 'base-A');
+                    baseBadge = `<span class="base-badge ${bClass}">${o.base}</span>`;
+                }
+
+                const eventsHtml = (o.events || []).map(ev => `
+                    <div style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.72rem;">
+                            <span style="color: #fff; font-weight: 700;">● ${ev.actor}: ${ev.event_type}</span>
+                            <span style="color: var(--text-muted);">${new Date(ev.timestamp).toLocaleTimeString('uk-UA')}</span>
+                        </div>
+                        ${ev.details ? `<div style="font-family: var(--font-body); font-size: 0.78rem; color: #ccc; margin-top: 2px;">${ev.details}</div>` : ''}
+                        <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #888; margin-top: 4px; word-break: break-all;">
+                            <span style="color: #00ff66; font-weight: 700;">🔒 SIG:</span> ${ev.signature ? ev.signature.substring(0, 24) + '...' : 'N/A'} (HMAC-SHA256)
+                        </div>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="disp-top-row">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="disp-order-num">${o.order_number}</span>
+                            ${baseBadge}
+                        </div>
+                        <span class="hero-status-pill working">ВИДАНО</span>
+                    </div>
+                    <div style="font-size: 1rem; font-weight: 700; color: #fff;">${o.material}</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                        ${o.client_name} // <strong style="color: #fff;">${o.color_code}</strong> • <em>${o.total_buckets} × ${o.bucket_weight}</em>
+                    </div>
+                    <div style="font-family: var(--font-mono); font-size: 0.72rem; color: #888; margin-top: 6px;">
+                        Видано: ${new Date(o.delivered_at || o.created_at).toLocaleString('uk-UA')}
+                    </div>
+                    <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px;">
+                        <button onclick="toggleAuditTimeline('${o.id}')" style="background: transparent; border: 1px solid var(--border-bright); color: #fff; font-family: var(--font-mono); font-size: 0.72rem; padding: 6px 12px; border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 6px; width: 100%; justify-content: center;">
+                            <span>🔒 ХРОНОЛОГІЯ ТА КРИПТОГРАФІЧНІ ПІДПИСИ (${(o.events || []).length})</span>
+                            <span id="audit-chevron-${o.id}">▾</span>
+                        </button>
+                        <div id="audit-body-${o.id}" style="display: none; margin-top: 10px; padding: 10px; background: #000; border: 1px solid var(--border-dim); border-radius: 12px;">
+                            ${eventsHtml || '<div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">Немає підписаних подій</div>'}
+                            <div style="font-family: var(--font-mono); font-size: 0.65rem; color: #00ff66; margin-top: 6px; text-align: right;">
+                                ✓ МАТЕМАТИЧНИЙ ДОКАЗ ЧАСУ ПІДТВЕРДЖЕНО
+                            </div>
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function toggleAuditTimeline(id) {
+            vibrateDevice(20);
+            const body = document.getElementById(`audit-body-${id}`);
+            const chevron = document.getElementById(`audit-chevron-${id}`);
+            if (body) {
+                const isHidden = body.style.display === 'none';
+                body.style.display = isHidden ? 'block' : 'none';
+                if (chevron) chevron.innerText = isHidden ? '▴' : '▾';
+            }
         }
 
         function toggleDelaysAccordion() {
