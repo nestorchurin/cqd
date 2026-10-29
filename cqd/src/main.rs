@@ -652,7 +652,7 @@ async fn local_decrement_bucket(
     };
 
     let details = format!("Відкат відра: {}/{}", new_completed, total_buckets);
-    let event = lock.record_event(&id, "BucketRollback", "Цех", Some(&details))?;
+    let event = lock.record_event(&id, "BucketRollback", "Колорист", Some(&details))?;
 
     {
         let mut db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -736,7 +736,7 @@ async fn local_mark_ready(
             &id,
             "ReadyForPickup",
             "Колорист",
-            Some("Усі відра заколіровано, продукція на рампі"),
+            Some("Усі відра заколіровано, продукція готова до видачі"),
         )?;
 
         {
@@ -859,8 +859,8 @@ async fn send_web_push_notifications(
 
     let client_part = if client_name.trim().is_empty() { String::new() } else { format!(" для {}", client_name.trim()) };
     let payload = serde_json::json!({
-        "title": "Ceresit Колірувальний Цех",
-        "body": format!("Замовлення{} ({} відер {}) заколіровано та готове до завантаження на рампі! 🪣", client_part, buckets, material),
+        "title": "Ceresit Колірування",
+        "body": format!("Замовлення{} ({} відер {}) заколіровано та готове до видачі! 🪣", client_part, buckets, material),
         "url": "/"
     }).to_string();
 

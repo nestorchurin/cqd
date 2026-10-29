@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ТАБЛО ЧЕРГИ РАМПИ // NOTHING OS</title>
+    <title>ТАБЛО ЧЕРГИ // NOTHING OS</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -784,7 +784,7 @@
             </div>
             
             <!-- Live Glyph Equalizer -->
-            <div class="glyph-equalizer" title="Пульс виробництва цеху">
+            <div class="glyph-equalizer" title="Пульс активності колірування">
                 <div class="eq-bar"></div>
                 <div class="eq-bar"></div>
                 <div class="eq-bar"></div>
@@ -800,9 +800,9 @@
 
         <!-- Board Hero -->
         <div class="board-header">
-            <div class="board-title">ТАБЛО ЧЕРГИ РАМПИ</div>
+            <div class="board-title">ТАБЛО ЧЕРГИ</div>
             <div class="board-sub">
-                <span>ТАБЛО ЧЕРГИ ВІДВАНТАЖЕННЯ ТА КОЛІРУВАННЯ</span>
+                <span>МОНІТОР ЧЕРГИ КОЛІРУВАННЯ ТА ВИДАЧІ</span>
                 <span class="badge-live">ОНЛАЙН</span>
             </div>
         </div>
@@ -810,11 +810,11 @@
         <!-- Nothing OS Quick Look Metric Widgets -->
         <div class="metrics-pills-bar">
             <div class="metric-pill ready-pill" onclick="scrollToSection('ready-section')">
-                <span class="pill-label">01. НА РАМПІ</span>
+                <span class="pill-label">01. ГОТОВО</span>
                 <span class="pill-val" id="ready-count">0</span>
             </div>
             <div class="metric-pill" onclick="scrollToSection('working-section')">
-                <span class="pill-label">02. В ЦЕХУ</span>
+                <span class="pill-label">02. В РОБОТІ</span>
                 <span class="pill-val" id="working-count">0</span>
             </div>
             <div class="metric-pill" onclick="scrollToSection('pending-section')">
@@ -838,7 +838,7 @@
         <div id="board-content" style="display: none;">
             <!-- Ready Section -->
             <div id="ready-section" class="section-label section-label-ready">
-                <span>01. ГОТОВО ДО ВИДАЧІ НА РАМПІ</span>
+                <span>01. ГОТОВО ДО ВИДАЧІ</span>
                 <span id="ready-badge-count">[0]</span>
             </div>
             <div id="ready-list" class="orders-grid"></div>
@@ -852,7 +852,7 @@
 
             <!-- Pending Section -->
             <div id="pending-section" class="section-label">
-                <span>03. ОЧІКУЮТЬ РЕЦЕПТА В ЦЕХУ</span>
+                <span>03. ОЧІКУЮТЬ РЕЦЕПТА</span>
                 <span id="pending-badge-count">[0]</span>
             </div>
             <div id="pending-list" class="orders-grid"></div>

@@ -1,6 +1,6 @@
 // Ceresit Queue Daemon Service Worker for Web Push
 self.addEventListener('push', function (event) {
-    let data = { title: 'Ceresit Колірувальний Цех', body: 'Ваше замовлення готове до видачі!' };
+    let data = { title: 'Ceresit Колірування', body: 'Ваше замовлення готове до видачі!' };
     try {
         if (event.data) {
             data = event.data.json();
@@ -24,7 +24,7 @@ self.addEventListener('push', function (event) {
     };
 
     event.waitUntil(
-        self.registration.showNotification(data.title || 'Ceresit Цех', options)
+        self.registration.showNotification(data.title || 'Ceresit Колірування', options)
     );
 });
 

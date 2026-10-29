@@ -754,7 +754,7 @@
     <!-- Mode Switcher (Unified 4-in-1 Control) -->
     <div class="mode-switcher-bar">
         <div class="mode-switcher">
-            <button id="mode-tab-workshop" class="mode-btn active" onclick="switchMode('workshop')">01. ЦЕХ</button>
+            <button id="mode-tab-workshop" class="mode-btn active" onclick="switchMode('workshop')">01. КОЛІРУВАННЯ</button>
             <button id="mode-tab-dispatcher" class="mode-btn" onclick="switchMode('dispatcher')">02. ДИСПЕТЧЕР</button>
             <button id="mode-tab-archive" class="mode-btn" onclick="switchMode('archive')">03. АРХІВ</button>
             <button id="mode-tab-create" class="mode-btn" onclick="switchMode('create')">+ НОВЕ</button>
@@ -762,7 +762,7 @@
     </div>
 
     <!-- ==========================================
-         VIEW 1: WORKSHOP TERMINAL (Колірувальний цех)
+         VIEW 1: COLORING TERMINAL (Термінал колірування)
          ========================================== -->
     <div id="view-workshop">
         <!-- Sticky Horizontal Queue Bar -->
@@ -834,7 +834,7 @@
                 <!-- Stage 1: Accept Button -->
                 <div id="stage-accept" class="action-container" style="display: none;">
                     <button class="btn-giant btn-accept" onclick="acceptOrder()">
-                        <span>01. ВЗЯТИ В РОБОТУ (РЕЦЕПТ В ЦЕХУ)</span>
+                        <span>01. ВЗЯТИ В РОБОТУ</span>
                     </button>
                 </div>
 
@@ -891,7 +891,7 @@
                     <div class="metric-tile-sub" id="disp-buckets-sub">0 відер</div>
                 </div>
                 <div class="metric-tile">
-                    <div class="metric-tile-title">ГОТОВО НА РАМПІ</div>
+                    <div class="metric-tile-title">ГОТОВО ДО ВИДАЧІ</div>
                     <div class="metric-tile-val" id="disp-ready-count">0</div>
                     <div class="metric-tile-sub">Чекають клієнтів</div>
                 </div>
@@ -1090,7 +1090,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn-create-submit">СТВОРИТИ ТА ВІДПРАВИТИ В ЦЕХ</button>
+                    <button type="submit" class="btn-create-submit">СТВОРИТИ ТА ДОДАТИ В ЧЕРГУ</button>
                 </form>
 
                 <div id="create-success-box" style="display: none; margin-top: 16px; padding: 14px; background: #000; border: 1px solid var(--border-bright); border-radius: 16px;">
@@ -1361,7 +1361,7 @@
                 if (order.status === 'Mixing') shortStatus = `${order.buckets_completed + 1}/${order.total_buckets}`;
                 else if (order.status === 'TechCardPending') shortStatus = 'WAIT';
                 else if (order.status === 'Accepted') shortStatus = 'READY';
-                else if (order.status === 'Ready') shortStatus = 'RAMP';
+                else if (order.status === 'Ready') shortStatus = 'ГОТОВО';
 
                 let baseTag = order.base ? order.base.replace('База ', '').trim() : '';
 
@@ -1515,7 +1515,7 @@
                         <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ КЛІЄНТА ↗</a>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <button onclick="confirmDeleteOrder('${o.id}', '${o.client_name}');" class="btn-delete-chip" style="padding: 4px 10px; font-size: 0.7rem;">ВИДАЛИТИ ✕</button>
-                            <span onclick="selectOrder('${o.id}'); switchMode('workshop');" style="font-family: var(--font-mono); font-size: 0.72rem; color: #fff; cursor: pointer; padding: 4px 10px; background: rgba(255, 255, 255, 0.1); border-radius: 999px;">В ЦЕХ ➔</span>
+                            <span onclick="selectOrder('${o.id}'); switchMode('workshop');" style="font-family: var(--font-mono); font-size: 0.72rem; color: #fff; cursor: pointer; padding: 4px 10px; background: rgba(255, 255, 255, 0.1); border-radius: 999px;">В РОБОТУ ➔</span>
                         </div>
                     </div>
                 `;
