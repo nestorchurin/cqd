@@ -1102,11 +1102,6 @@
 
                 <form onsubmit="handleCreateOrder(event)">
                     <div class="form-field">
-                        <label class="form-label">НОМЕР ЗАМОВЛЕННЯ <span style="color: var(--text-muted); font-size: 0.65rem; font-weight: normal;">(АВТО / ЗА БАЖАННЯМ)</span></label>
-                        <input type="text" id="create-order-number" class="form-input" placeholder="Авто (наприклад #1044) або свій номер">
-                    </div>
-
-                    <div class="form-field">
                         <label class="form-label">КЛІЄНТ / ВОДІЙ <span style="color: var(--text-muted); font-size: 0.65rem; font-weight: normal;">(ЗА БАЖАННЯМ)</span></label>
                         <input type="text" id="create-client-name" class="form-input" placeholder="Клієнт (наприклад: Лац, БудСервіс)">
                     </div>
@@ -1271,7 +1266,6 @@
             });
             if (mode === 'dispatcher') renderDispatcherMetrics();
             if (mode === 'archive') fetchArchive();
-            if (mode === 'create') fetchNextOrderNumber();
         }
 
         let archivedOrders = [];
@@ -1747,7 +1741,7 @@
             const rawColor = document.getElementById('create-color-code').value.trim();
 
             const payload = {
-                order_number: rawOrderNum || null,
+                order_number: null,
                 client_name: rawClient || null,
                 material: finalMaterial,
                 total_buckets: parseInt(document.getElementById('create-total-buckets').value) || 1,
@@ -1769,31 +1763,12 @@
 
                 setTimeout(() => {
                     document.getElementById('create-success-box').style.display = 'none';
-                    document.getElementById('create-order-number').value = '';
                     document.getElementById('create-client-name').value = '';
                     document.getElementById('create-color-code').value = '';
                     fetchQueue();
                     selectOrder(created.id);
                     switchMode('workshop');
                 }, 1200);
-            }
-        }
-
-        async function fetchNextOrderNumber() {
-            try {
-                const orderNumInput = document.getElementById('create-order-number');
-                if (!orderNumInput.value) {
-                    const res = await fetch('/api/terminal/next-order-number');
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.next_order_number && !orderNumInput.value) {
-                            orderNumInput.placeholder = `Авто: ${data.next_order_number}`;
-                            orderNumInput.value = data.next_order_number;
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error('Error fetching next order number:', e);
             }
         }
 
@@ -1816,9 +1791,6 @@
                 const json = await resp.json();
                 const data = json.data || {};
 
-                if (json.order_number) {
-                    document.getElementById('create-order-number').value = json.order_number;
-                }
                 if (data.client_name) {
                     document.getElementById('create-client-name').value = data.client_name;
                 }
