@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CERESIT QUEUE BOARD // NOTHING OS</title>
+    <title>RAMP QUEUE BOARD // NOTHING OS</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,151 +11,298 @@
     <style>
         :root {
             --bg-black: #000000;
-            --surface: #0e0e0e;
-            --surface-elevated: #161616;
-            --border-dim: #262626;
-            --border-bright: #444444;
+            --surface: #0d0d0d;
+            --surface-elevated: #151515;
+            --surface-card: rgba(18, 18, 18, 0.82);
+            --surface-ready: rgba(24, 24, 24, 0.94);
+            --border-dim: rgba(255, 255, 255, 0.08);
+            --border-bright: rgba(255, 255, 255, 0.22);
+            --border-glow: rgba(255, 255, 255, 0.65);
+            --nothing-red: #d71921;
+            --nothing-red-glow: rgba(215, 25, 33, 0.45);
             --text-main: #f5f5f5;
             --text-muted: #888888;
-            --nothing-red: #d71921;
+            --text-sub: #555555;
             --font-dot: 'Doto', monospace;
             --font-body: 'Space Grotesk', -apple-system, sans-serif;
             --font-mono: 'Space Mono', monospace;
+            --ease-out-nothing: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-touch: cubic-bezier(0.2, 0, 0, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background-color: var(--bg-black);
-            background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-            background-size: 20px 20px;
+            background-image: radial-gradient(rgba(255, 255, 255, 0.11) 1.2px, transparent 1.2px);
+            background-size: 22px 22px;
             color: var(--text-main);
             font-family: var(--font-body);
-            padding: 24px 16px 40px;
+            padding: 24px 16px 60px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
             width: 100%;
             max-width: 680px;
+            position: relative;
         }
 
-        /* Top Bar */
+        /* Top Brand Bar */
         .top-brand {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding-bottom: 20px;
             border-bottom: 1px solid var(--border-dim);
-            margin-bottom: 24px;
+            margin-bottom: 28px;
         }
         .brand-title {
             font-family: var(--font-dot);
             font-weight: 900;
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             letter-spacing: 2px;
             color: #ffffff;
             display: flex;
             align-items: center;
             gap: 10px;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
         }
-        .red-dot {
+        .glyph-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             background-color: var(--nothing-red);
-            box-shadow: 0 0 8px var(--nothing-red);
-            animation: pulse-red 2s infinite;
-        }
-        .clock-feed {
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            letter-spacing: 1px;
+            box-shadow: 0 0 10px var(--nothing-red), 0 0 20px var(--nothing-red-glow);
+            animation: glyph-pulse 2.2s infinite ease-in-out;
         }
 
-        /* Hero Banner */
+        /* Live Glyph Equalizer */
+        .glyph-equalizer {
+            display: flex;
+            gap: 4px;
+            align-items: flex-end;
+            height: 18px;
+            padding: 0 4px;
+        }
+        .eq-bar {
+            width: 3px;
+            background: #444444;
+            border-radius: 2px;
+            height: 100%;
+            animation: eq-wave 1.6s ease-in-out infinite alternate;
+        }
+        .eq-bar:nth-child(1) { animation-delay: 0.1s; height: 35%; }
+        .eq-bar:nth-child(2) { animation-delay: 0.35s; height: 75%; }
+        .eq-bar:nth-child(3) { animation-delay: 0.15s; height: 100%; background: #ffffff; }
+        .eq-bar:nth-child(4) { animation-delay: 0.45s; height: 60%; }
+        .eq-bar:nth-child(5) { animation-delay: 0.25s; height: 90%; background: var(--nothing-red); box-shadow: 0 0 6px var(--nothing-red); }
+
+        .clock-feed {
+            font-family: var(--font-dot);
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .clock-colon {
+            animation: colon-blink 1s infinite steps(1);
+        }
+
+        /* Hero Header */
         .board-header {
             margin-bottom: 24px;
         }
         .board-title {
             font-family: var(--font-dot);
-            font-size: 2.2rem;
+            font-size: 2.35rem;
             font-weight: 900;
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
             color: #ffffff;
             line-height: 1.1;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
         }
         .board-sub {
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            margin-top: 6px;
+            margin-top: 8px;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge-live {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid var(--border-bright);
         }
 
-        /* Search input */
-        .search-box {
+        /* Quick Look Metric Pills (Nothing OS Widgets) */
+        .metrics-pills-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
             margin-bottom: 24px;
+        }
+        .metric-pill {
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-dim);
+            border-radius: 18px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all 0.18s var(--ease-touch);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+        .metric-pill:active { transform: scale(0.97); }
+        .metric-pill.ready-pill {
+            border-color: rgba(255, 255, 255, 0.35);
+            background: rgba(26, 26, 26, 0.85);
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.04);
+        }
+        .pill-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+        .pill-val {
+            font-family: var(--font-dot);
+            font-size: 1.45rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+            letter-spacing: 1px;
+        }
+        .metric-pill.ready-pill .pill-val {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
+            margin-bottom: 28px;
+        }
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            pointer-events: none;
         }
         .search-input {
             width: 100%;
             background: rgba(18, 18, 18, 0.85);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--border-bright);
             border-radius: 999px;
-            padding: 14px 22px;
+            padding: 15px 20px 15px 44px;
             color: #ffffff;
             font-family: var(--font-body);
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.15s;
+            transition: all 0.2s var(--ease-touch);
         }
-        .search-input:focus { border-color: #ffffff; }
+        .search-input::placeholder {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .search-input:focus {
+            border-color: #ffffff;
+            background: rgba(26, 26, 26, 0.95);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+        }
 
-        /* Section Headings */
+        /* Section Labels */
         .section-label {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: var(--text-muted);
-            margin: 24px 0 12px;
+            margin: 28px 0 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
+        .section-label-ready {
+            color: #ffffff;
+            font-weight: 700;
+        }
 
-        /* Order Cards */
+        /* Orders Grid */
         .orders-grid {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
+
+        /* Nothing OS Squircle Card */
         .order-card {
-            background: rgba(18, 18, 18, 0.85);
-            backdrop-filter: blur(16px);
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--border-dim);
-            border-radius: 22px;
-            padding: 18px 22px;
+            border-radius: 24px;
+            padding: 20px 22px;
             text-decoration: none;
             color: inherit;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            transition: all 0.15s;
+            gap: 14px;
+            transition: transform 0.16s var(--ease-touch), border-color 0.16s, box-shadow 0.16s;
             position: relative;
             overflow: hidden;
+            animation: nothingCardIn 0.4s var(--ease-out-nothing) both;
         }
-        .order-card:active { transform: scale(0.98); }
+        .order-card:active {
+            transform: scale(0.975);
+        }
+
+        /* Ready for Pickup Card Highlight */
         .order-card.ready-card {
-            border-color: rgba(255, 255, 255, 0.6);
-            background: rgba(26, 26, 26, 0.95);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.08);
+            background: var(--surface-ready);
+            border-color: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.08);
+        }
+        .order-card.ready-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ffffff, transparent);
+            animation: sweep-glow 3s infinite ease-in-out;
         }
 
         .card-top {
@@ -163,16 +310,32 @@
             justify-content: space-between;
             align-items: center;
         }
+        .card-num-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         .card-num {
             font-family: var(--font-dot);
-            font-size: 1.8rem;
+            font-size: 1.85rem;
             font-weight: 900;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             color: #ffffff;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.4);
         }
+        .ready-beacon {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px #ffffff;
+            animation: beacon-blink 1.4s infinite ease-in-out;
+        }
+
+        /* Status Badge */
         .status-badge {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
             padding: 6px 14px;
             border-radius: 999px;
@@ -181,71 +344,211 @@
             border: 1px solid var(--border-bright);
             background: var(--surface-elevated);
             color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .status-badge.ready {
             background: #ffffff;
             color: #000000;
             border-color: #ffffff;
+            box-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+            font-weight: 800;
         }
         .status-badge.mixing {
             background: transparent;
             color: #ffffff;
             border-color: var(--nothing-red);
+            box-shadow: 0 0 10px rgba(215, 25, 33, 0.2);
+        }
+        .status-badge.mixing .spinner-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--nothing-red);
+            animation: glyph-pulse 1.2s infinite ease-in-out;
+        }
+
+        /* Ceresit Base Badges */
+        .base-pill {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid var(--border-dim);
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+        }
+        .base-pill.base-C {
+            border-color: rgba(215, 25, 33, 0.5);
+            color: #ff858d;
+            background: rgba(215, 25, 33, 0.08);
         }
 
         .card-details {
             display: grid;
             grid-template-columns: 1fr auto;
-            gap: 10px;
+            gap: 12px;
             align-items: baseline;
         }
         .card-mat {
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #ffffff;
+            letter-spacing: -0.01em;
         }
-        .card-client {
+        .card-subinfo {
             font-family: var(--font-mono);
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
-            margin-top: 3px;
+            margin-top: 4px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+        .color-val {
+            color: #ffffff;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 7px;
+            border-radius: 6px;
+        }
+        .card-progress-box {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 3px;
         }
         .card-progress {
             font-family: var(--font-dot);
-            font-size: 1.3rem;
+            font-size: 1.45rem;
             font-weight: 800;
             color: #ffffff;
             letter-spacing: 1px;
-            text-align: right;
+            line-height: 1;
+        }
+        .card-weight-sub {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
         }
 
+        /* Micro-LED Progress Bar */
+        .progress-dot-bar {
+            display: flex;
+            gap: 3px;
+            margin-top: 4px;
+        }
+        .progress-micro-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #2b2b2b;
+        }
+        .progress-micro-dot.filled {
+            background: #ffffff;
+            box-shadow: 0 0 4px #ffffff;
+        }
+        .progress-micro-dot.filled-red {
+            background: var(--nothing-red);
+            box-shadow: 0 0 4px var(--nothing-red);
+        }
+
+        /* Tap Hint */
         .tap-hint {
             font-family: var(--font-mono);
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 12px;
             margin-top: 2px;
+            letter-spacing: 0.5px;
+            transition: color 0.15s;
+        }
+        .order-card:hover .tap-hint {
+            color: #ffffff;
+        }
+        .arrow-glyph {
+            font-weight: 700;
+            transition: transform 0.15s;
+        }
+        .order-card:hover .arrow-glyph {
+            transform: translate(2px, -2px);
         }
 
+        /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 32px;
+            padding: 36px 20px;
             font-family: var(--font-mono);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-muted);
-            background: var(--surface);
+            background: rgba(14, 14, 14, 0.75);
             border: 1px dashed var(--border-dim);
-            border-radius: 20px;
+            border-radius: 24px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
 
-        @keyframes pulse-red {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.3); opacity: 0.6; }
-            100% { transform: scale(1); opacity: 1; }
+        /* Keyframe Animations */
+        @keyframes nothingCardIn {
+            0% {
+                opacity: 0;
+                transform: translateY(16px) scale(0.985);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes glyph-pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.85;
+            }
+            50% {
+                transform: scale(1.35);
+                opacity: 1;
+                box-shadow: 0 0 14px var(--nothing-red), 0 0 25px var(--nothing-red-glow);
+            }
+        }
+
+        @keyframes beacon-blink {
+            0%, 100% { opacity: 0.3; transform: scale(0.85); }
+            50% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 12px #ffffff; }
+        }
+
+        @keyframes colon-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.15; }
+        }
+
+        @keyframes eq-wave {
+            0% { transform: scaleY(0.2); opacity: 0.4; }
+            100% { transform: scaleY(1); opacity: 1; }
+        }
+
+        @keyframes sweep-glow {
+            0% { transform: translateX(-100%); }
+            50%, 100% { transform: translateX(100%); }
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .board-title { font-size: 1.95rem; }
+            .card-num { font-size: 1.6rem; }
+            .metrics-pills-bar { gap: 8px; }
+            .metric-pill { padding: 10px 12px; }
+            .pill-val { font-size: 1.25rem; }
         }
     </style>
 </head>
@@ -254,44 +557,81 @@
         <!-- Top Bar -->
         <div class="top-brand">
             <div class="brand-title">
-                <div class="red-dot"></div>
-                <span>CERESIT // CQD</span>
+                <div class="glyph-dot"></div>
+                <span>CERESIT // LIVE MATRIX</span>
             </div>
-            <div id="live-clock" class="clock-feed">00:00:00</div>
+            
+            <!-- Live Glyph Equalizer -->
+            <div class="glyph-equalizer" title="Ramp Workshop Live Pulse">
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+                <div class="eq-bar"></div>
+            </div>
+
+            <!-- Dot Matrix Live Clock -->
+            <div id="live-clock" class="clock-feed">
+                <span id="clock-h">00</span><span class="clock-colon">:</span><span id="clock-m">00</span><span class="clock-colon">:</span><span id="clock-s">00</span>
+            </div>
         </div>
 
+        <!-- Board Hero -->
         <div class="board-header">
             <div class="board-title">RAMP QUEUE BOARD</div>
-            <div class="board-sub">ТАБЛО ЧЕРГИ ВІДВАНТАЖЕННЯ ТА КОЛІРУВАННЯ</div>
+            <div class="board-sub">
+                <span>ТАБЛО ЧЕРГИ ВІДВАНТАЖЕННЯ ТА КОЛІРУВАННЯ</span>
+                <span class="badge-live">LIVE FEED</span>
+            </div>
         </div>
 
+        <!-- Nothing OS Quick Look Metric Widgets -->
+        <div class="metrics-pills-bar">
+            <div class="metric-pill ready-pill" onclick="scrollToSection('ready-section')">
+                <span class="pill-label">01. НА РАМПІ</span>
+                <span class="pill-val" id="ready-count">0</span>
+            </div>
+            <div class="metric-pill" onclick="scrollToSection('working-section')">
+                <span class="pill-label">02. В ЦЕХУ</span>
+                <span class="pill-val" id="working-count">0</span>
+            </div>
+            <div class="metric-pill" onclick="scrollToSection('pending-section')">
+                <span class="pill-label">03. В ЧЕРЗІ</span>
+                <span class="pill-val" id="pending-count">0</span>
+            </div>
+        </div>
+
+        <!-- Search Input Widget -->
         <div class="search-box">
-            <input type="text" id="search-input" class="search-input" placeholder="ПОШУК ЗА НОМЕРОМ НАКЛАДНОЇ АБО КЛІЄНТОМ..." oninput="filterOrders()">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="search-input" placeholder="ПОШУК ЗА НАКЛАДНОЮ ЧИ КЛІЄНТОМ..." oninput="filterOrders()">
         </div>
 
+        <!-- Loading State -->
         <div id="loading" class="empty-state">
             LOADING LIVE BATCH MATRIX...
         </div>
 
+        <!-- Board Content -->
         <div id="board-content" style="display: none;">
             <!-- Ready Section -->
-            <div class="section-label">
+            <div id="ready-section" class="section-label section-label-ready">
                 <span>01. ГОТОВО ДО ВИДАЧІ НА РАМПІ</span>
-                <span id="ready-count">[0]</span>
+                <span id="ready-badge-count">[0]</span>
             </div>
             <div id="ready-list" class="orders-grid"></div>
 
             <!-- In Progress Section -->
-            <div class="section-label">
+            <div id="working-section" class="section-label">
                 <span>02. У ВИРОБНИЦТВІ (КОЛІРУВАННЯ / МІКСЕР)</span>
-                <span id="working-count">[0]</span>
+                <span id="working-badge-count">[0]</span>
             </div>
             <div id="working-list" class="orders-grid"></div>
 
             <!-- Pending Section -->
-            <div class="section-label">
+            <div id="pending-section" class="section-label">
                 <span>03. ОЧІКУЮТЬ РЕЦЕПТА В ЦЕХУ</span>
-                <span id="pending-count">[0]</span>
+                <span id="pending-badge-count">[0]</span>
             </div>
             <div id="pending-list" class="orders-grid"></div>
         </div>
@@ -300,9 +640,25 @@
     <script>
         let allOrders = [];
 
-        setInterval(() => {
-            document.getElementById('live-clock').innerText = new Date().toTimeString().split(' ')[0];
-        }, 1000);
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const elH = document.getElementById('clock-h');
+            const elM = document.getElementById('clock-m');
+            const elS = document.getElementById('clock-s');
+            if (elH) elH.innerText = h;
+            if (elM) elM.innerText = m;
+            if (elS) elS.innerText = s;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
         async function fetchQueue() {
             try {
@@ -323,9 +679,9 @@
                 return;
             }
             const filtered = allOrders.filter(o => 
-                o.order_number.toLowerCase().includes(query) ||
-                o.client_name.toLowerCase().includes(query) ||
-                o.material.toLowerCase().includes(query) ||
+                (o.order_number && o.order_number.toLowerCase().includes(query)) ||
+                (o.client_name && o.client_name.toLowerCase().includes(query)) ||
+                (o.material && o.material.toLowerCase().includes(query)) ||
                 (o.collection && o.collection.toLowerCase().includes(query)) ||
                 (o.color_code && o.color_code.toLowerCase().includes(query))
             );
@@ -348,42 +704,68 @@
             const working = orders.filter(o => o.status === 'Mixing' || o.status === 'Accepted' || o.status === 'Paused');
             const pending = orders.filter(o => o.status === 'Registered' || o.status === 'TechCardPending');
 
-            document.getElementById('ready-count').innerText = `[${ready.length}]`;
-            document.getElementById('working-count').innerText = `[${working.length}]`;
-            document.getElementById('pending-count').innerText = `[${pending.length}]`;
+            document.getElementById('ready-count').innerText = ready.length;
+            document.getElementById('working-count').innerText = working.length;
+            document.getElementById('pending-count').innerText = pending.length;
+
+            document.getElementById('ready-badge-count').innerText = `[${ready.length}]`;
+            document.getElementById('working-badge-count').innerText = `[${working.length}]`;
+            document.getElementById('pending-badge-count').innerText = `[${pending.length}]`;
 
             if (ready.length === 0) {
                 readyList.innerHTML = '<div class="empty-state">НЕМАЄ ЗАМОВЛЕНЬ НА ВИДАЧУ</div>';
             } else {
-                ready.forEach(o => readyList.appendChild(createOrderCard(o, true)));
+                ready.forEach((o, idx) => readyList.appendChild(createOrderCard(o, true, idx)));
             }
 
             if (working.length === 0) {
                 workingList.innerHTML = '<div class="empty-state">МІКСЕРИ ВІЛЬНІ</div>';
             } else {
-                working.forEach(o => workingList.appendChild(createOrderCard(o, false)));
+                working.forEach((o, idx) => workingList.appendChild(createOrderCard(o, false, idx)));
             }
 
             if (pending.length === 0) {
                 pendingList.innerHTML = '<div class="empty-state">ЧЕРГА ПОРОЖНЯ</div>';
             } else {
-                pending.forEach(o => pendingList.appendChild(createOrderCard(o, false)));
+                pending.forEach((o, idx) => pendingList.appendChild(createOrderCard(o, false, idx)));
             }
         }
 
-        function createOrderCard(o, isReady) {
+        function formatColor(o) {
+            const col = o.collection ? o.collection.trim() : '';
+            const code = o.color_code ? o.color_code.trim() : 'Стандарт';
+            return col ? `${col} ${code}` : code;
+        }
+
+        function renderMicroDots(completed, total, isMixing) {
+            const count = Math.min(total, 12);
+            let dots = '';
+            for (let i = 0; i < count; i++) {
+                if (i < completed) {
+                    dots += `<div class="progress-micro-dot ${isMixing ? 'filled-red' : 'filled'}"></div>`;
+                } else {
+                    dots += '<div class="progress-micro-dot"></div>';
+                }
+            }
+            return dots;
+        }
+
+        function createOrderCard(o, isReady, idx) {
             const a = document.createElement('a');
             a.className = 'order-card' + (isReady ? ' ready-card' : '');
             a.href = `/track/${o.token}`;
+            a.style.animationDelay = `${idx * 0.04}s`;
 
             let statusLabel = o.status;
             let badgeClass = 'status-badge';
+            let beaconHtml = '';
 
             if (o.status === 'Ready') {
                 statusLabel = 'ГОТОВО ДО ВИДАЧІ';
                 badgeClass += ' ready';
+                beaconHtml = '<div class="ready-beacon"></div>';
             } else if (o.status === 'Mixing') {
-                statusLabel = `МІКСЕР (${o.buckets_completed + 1}/${o.total_buckets})`;
+                statusLabel = `<div class="spinner-dot"></div> МІКСЕР (${o.buckets_completed + 1}/${o.total_buckets})`;
                 badgeClass += ' mixing';
             } else if (o.status === 'Accepted') {
                 statusLabel = 'КОЛІРУВАННЯ';
@@ -395,21 +777,42 @@
                 statusLabel = 'ЗАРЕЄСТРОВАНО';
             }
 
+            let baseBadge = '';
+            if (o.base) {
+                const bLetter = o.base.replace('База ', '').trim();
+                const bClass = bLetter === 'C' ? 'base-C' : '';
+                baseBadge = `<span class="base-pill ${bClass}">${o.base}</span>`;
+            }
+
+            const microDots = renderMicroDots(o.buckets_completed, o.total_buckets, o.status === 'Mixing');
+
             a.innerHTML = `
                 <div class="card-top">
-                    <div class="card-num">${o.order_number}</div>
+                    <div class="card-num-box">
+                        <span class="card-num">${o.order_number}</span>
+                        ${baseBadge}
+                        ${beaconHtml}
+                    </div>
                     <div class="${badgeClass}">${statusLabel}</div>
                 </div>
                 <div class="card-details">
                     <div>
                         <div class="card-mat">${o.material}</div>
-                        <div class="card-client">${o.client_name} // <strong>${(o.collection ? o.collection + ' ' : '') + o.color_code}</strong>${o.base ? ' • <span style="color:#fff;">' + o.base + '</span>' : ''}</div>
+                        <div class="card-subinfo">
+                            <span>${o.client_name}</span>
+                            <span>//</span>
+                            <span class="color-val">${formatColor(o)}</span>
+                        </div>
                     </div>
-                    <div class="card-progress">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted);">${o.bucket_weight}</span></div>
+                    <div class="card-progress-box">
+                        <div class="card-progress">${o.buckets_completed} / ${o.total_buckets}</div>
+                        <div class="card-weight-sub">${o.bucket_weight}</div>
+                        <div class="progress-dot-bar">${microDots}</div>
+                    </div>
                 </div>
                 <div class="tap-hint">
-                    <span>ПЕРСОНАЛЬНИЙ ТРЕКІНГ ЗАМОВЛЕННЯ</span>
-                    <span>ВІДКРИТИ ↗</span>
+                    <span>ПЕРСОНАЛЬНИЙ ТРЕКІНГ КЛІЄНТА</span>
+                    <span class="arrow-glyph">ВІДКРИТИ ↗</span>
                 </div>
             `;
             return a;
