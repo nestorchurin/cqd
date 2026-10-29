@@ -45,6 +45,7 @@ struct Order {
     client_name: String,
     material: String,
     color_code: String,
+    base: Option<String>,
     total_buckets: u32,
     bucket_weight: String,
     buckets_completed: u32,
@@ -80,6 +81,7 @@ struct CreateOrderRequest {
     total_buckets: u32,
     bucket_weight: String,
     color_code: String,
+    base: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -127,6 +129,7 @@ struct PublicOrderSummary {
     client_name: String,
     material: String,
     color_code: String,
+    base: Option<String>,
     total_buckets: u32,
     bucket_weight: String,
     buckets_completed: u32,
@@ -146,6 +149,7 @@ async fn public_get_queue(State(state): State<SharedState>) -> Json<Vec<PublicOr
             client_name: o.client_name.clone(),
             material: o.material.clone(),
             color_code: o.color_code.clone(),
+            base: o.base.clone(),
             total_buckets: o.total_buckets,
             bucket_weight: o.bucket_weight.clone(),
             buckets_completed: o.buckets_completed,
@@ -264,6 +268,7 @@ async fn local_create_order(
         client_name: req.client_name,
         material: req.material,
         color_code: req.color_code,
+        base: req.base,
         total_buckets: req.total_buckets,
         bucket_weight: req.bucket_weight,
         buckets_completed: 0,
@@ -574,6 +579,7 @@ async fn main() {
             client_name: "ТОВ БудСервіс / Водій Василь".to_string(),
             material: "Ceresit CT 174 (1.5mm)".to_string(),
             color_code: "Nebraska 3".to_string(),
+            base: Some("База B".to_string()),
             total_buckets: 5,
             bucket_weight: "25 кг".to_string(),
             buckets_completed: 0,

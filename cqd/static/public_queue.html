@@ -402,7 +402,7 @@
                 <div class="card-details">
                     <div>
                         <div class="card-mat">${o.material}</div>
-                        <div class="card-client">${o.client_name} // ${o.color_code}</div>
+                        <div class="card-client">${o.client_name} // <strong>${o.color_code}</strong>${o.base ? ' • <span style="color:#fff;">' + o.base + '</span>' : ''}</div>
                     </div>
                     <div class="card-progress">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.8rem; font-family: var(--font-mono); color: var(--text-muted);">${o.bucket_weight}</span></div>
                 </div>

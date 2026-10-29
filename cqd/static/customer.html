@@ -330,12 +330,16 @@
                         <div id="order-color" class="spec-value">—</div>
                     </div>
                     <div class="spec-box">
-                        <div class="spec-label">BATCH QUANTITY</div>
-                        <div id="order-buckets" class="spec-value">—</div>
+                        <div class="spec-label">CERESIT BASE</div>
+                        <div id="order-base" class="spec-value">БАЗА A</div>
                     </div>
                     <div class="spec-box">
                         <div class="spec-label">BUCKET SIZE</div>
                         <div id="order-weight" class="spec-value">—</div>
+                    </div>
+                    <div class="spec-box" style="grid-column: span 2;">
+                        <div class="spec-label">BATCH QUANTITY</div>
+                        <div id="order-buckets" class="spec-value">—</div>
                     </div>
                 </div>
 
@@ -425,6 +429,7 @@
             document.getElementById('order-client').innerText = data.client_name;
             document.getElementById('order-material').innerText = data.material;
             document.getElementById('order-color').innerText = data.color_code;
+            document.getElementById('order-base').innerText = data.base || 'БАЗА A';
             document.getElementById('order-buckets').innerText = `${data.buckets_completed} / ${data.total_buckets}`;
             document.getElementById('order-weight').innerText = data.bucket_weight;
 

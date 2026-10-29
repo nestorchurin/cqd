@@ -330,6 +330,108 @@
             color: #ffffff;
             letter-spacing: 1px;
         }
+        .spec-val-weight {
+            font-family: var(--font-dot);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+        .base-card-box {
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .spec-val-base {
+            font-family: var(--font-dot);
+            font-size: 1.3rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+        .spec-val-base.base-A {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+        }
+        .spec-val-base.base-B {
+            color: #d1d5db;
+        }
+        .spec-val-base.base-C {
+            color: #ff5252;
+            text-shadow: 0 0 10px rgba(215, 25, 33, 0.5);
+        }
+
+        /* Base Selector in Form */
+        .base-selector-group {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .base-btn {
+            background: #000000;
+            border: 1px solid var(--border-bright);
+            border-radius: 14px;
+            padding: 10px 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .base-btn .base-letter {
+            font-family: var(--font-dot);
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+        }
+        .base-btn .base-desc {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            text-align: center;
+        }
+        .base-btn.active {
+            background: #ffffff;
+            border-color: #ffffff;
+        }
+        .base-btn.active .base-letter {
+            color: #000000;
+        }
+        .base-btn.active .base-desc {
+            color: #000000;
+            font-weight: 700;
+        }
+
+        .base-badge {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+        .base-badge.base-A {
+            border-color: rgba(255, 255, 255, 0.6);
+            color: #ffffff;
+        }
+        .base-badge.base-B {
+            border-color: rgba(200, 200, 200, 0.4);
+            color: #d1d5db;
+        }
+        .base-badge.base-C {
+            border-color: rgba(215, 25, 33, 0.6);
+            background: rgba(215, 25, 33, 0.15);
+            color: #ff6b72;
+        }
 
         /* Client Row */
         .client-box {
@@ -728,11 +830,23 @@
                             <div id="hero-material" class="material-title">—</div>
                         </div>
 
-                        <!-- 2-Col Recipe & Progress -->
+                        <!-- 2-Col Recipe & Base -->
                         <div class="spec-row">
                             <div class="spec-box">
                                 <div class="box-label">РЕЦЕПТ / КОЛІР</div>
                                 <div id="hero-color" class="spec-val-recipe">—</div>
+                            </div>
+                            <div class="spec-box base-card-box">
+                                <div class="box-label">БАЗА ВІДРА (BASE)</div>
+                                <div id="hero-base" class="spec-val-base">БАЗА A</div>
+                            </div>
+                        </div>
+
+                        <!-- 2-Col Packaging & Progress -->
+                        <div class="spec-row">
+                            <div class="spec-box">
+                                <div class="box-label">ФАСУВАННЯ ВІДРА</div>
+                                <div id="hero-weight" class="spec-val-weight">25 КГ</div>
                             </div>
                             <div class="spec-box">
                                 <div class="box-label">ПРОГРЕС ВІДЕР</div>
@@ -758,7 +872,7 @@
                 <!-- Stage 2: Mixer Controls -->
                 <div id="stage-mixing" class="mixer-section" style="display: none;">
                     <div class="mixer-header">
-                        <span>ГІРОМІКСЕР // ВІДРО <span id="current-bucket-idx">1</span> З <span id="total-bucket-idx">5</span></span>
+                        <span>ГІРОМІКСЕР // ВІДРО <span id="current-bucket-idx">1</span> З <span id="total-bucket-idx">5</span> (<span id="mixer-bucket-weight">25 кг</span>)</span>
                         <span id="mixer-status-indicator">ГОТОВИЙ</span>
                     </div>
 
@@ -884,33 +998,89 @@
 
                     <div class="form-field">
                         <label class="form-label">МАТЕРІАЛ CERESIT</label>
-                        <select id="create-material" class="form-select">
-                            <option value="Ceresit CT 174 (1.5mm)">Ceresit CT 174 (1.5mm)</option>
-                            <option value="Ceresit CT 174 (2.0mm)">Ceresit CT 174 (2.0mm)</option>
-                            <option value="Ceresit CT 60 (1.5mm)">Ceresit CT 60 (1.5mm)</option>
-                            <option value="Ceresit CT 48 (Фасадна силіконова)">Ceresit CT 48 (Силіконова)</option>
-                            <option value="Ceresit CT 54 (Силікатна)">Ceresit CT 54 (Силікатна)</option>
-                            <option value="Ceresit CT 74 (Силіконова 1.5mm)">Ceresit CT 74 (Силіконова 1.5mm)</option>
+                        <select id="create-material" class="form-select" onchange="onMaterialChange()">
+                            <optgroup label="Ґрунтуючі фарби">
+                                <option value="Ceresit CT 16 Ґрунтуюча фарба (15 кг / 10 л)">Ceresit CT 16 Ґрунтуюча фарба (15 кг / 10 л)</option>
+                                <option value="Ceresit CT 16 Pro Ґрунтуюча фарба">Ceresit CT 16 Pro Ґрунтуюча фарба</option>
+                            </optgroup>
+                            <optgroup label="Штукатурки Силікон-силікатні">
+                                <option value="Ceresit CT 174 (1.5mm) Камінцева" selected>Ceresit CT 174 (1.5mm) Камінцева</option>
+                                <option value="Ceresit CT 174 (2.0mm) Камінцева">Ceresit CT 174 (2.0mm) Камінцева</option>
+                                <option value="Ceresit CT 175 (2.0mm) Короїд">Ceresit CT 175 (2.0mm) Короїд</option>
+                            </optgroup>
+                            <optgroup label="Штукатурки Акрилові">
+                                <option value="Ceresit CT 60 (1.5mm) Камінцева">Ceresit CT 60 (1.5mm) Камінцева</option>
+                                <option value="Ceresit CT 60 (2.5mm) Камінцева">Ceresit CT 60 (2.5mm) Камінцева</option>
+                                <option value="Ceresit CT 64 (2.0mm) Короїд">Ceresit CT 64 (2.0mm) Короїд</option>
+                            </optgroup>
+                            <optgroup label="Штукатурки Силіконові">
+                                <option value="Ceresit CT 74 (1.5mm) Камінцева">Ceresit CT 74 (1.5mm) Камінцева</option>
+                                <option value="Ceresit CT 74 (2.5mm) Камінцева">Ceresit CT 74 (2.5mm) Камінцева</option>
+                                <option value="Ceresit CT 75 (2.0mm) Короїд">Ceresit CT 75 (2.0mm) Короїд</option>
+                            </optgroup>
+                            <optgroup label="Декоративні лінійки Visage">
+                                <option value="Ceresit CT 721 Visage Дерево">Ceresit CT 721 Visage (Дерево 10 кг)</option>
+                                <option value="Ceresit CT 710 Visage Граніт / Камінь">Ceresit CT 710 Visage (Граніт / Камінь)</option>
+                            </optgroup>
+                            <optgroup label="Фасадні фарби">
+                                <option value="Ceresit CT 48 Силіконова фарба">Ceresit CT 48 Силіконова фарба (15 л)</option>
+                                <option value="Ceresit CT 44 Акрилова фарба">Ceresit CT 44 Акрилова фарба (15 л)</option>
+                                <option value="Ceresit CT 54 Силікатна фарба">Ceresit CT 54 Силікатна фарба (15 л)</option>
+                            </optgroup>
+                            <option value="__custom__">➕ ВЛАСНИЙ МАТЕРІАЛ / ІНШЕ...</option>
                         </select>
+                        <input type="text" id="create-material-custom" class="form-input" style="display: none; margin-top: 8px;" placeholder="Введіть точну назву матеріалу...">
+                    </div>
+
+                    <div class="form-field">
+                        <label class="form-label">БАЗА КОЛІРУВАННЯ (CERESIT BASE)</label>
+                        <div class="base-selector-group">
+                            <button type="button" class="base-btn active" data-base="База A" onclick="selectBase('База A')">
+                                <span class="base-letter">A</span>
+                                <span class="base-desc">Світлі / Біла</span>
+                            </button>
+                            <button type="button" class="base-btn" data-base="База B" onclick="selectBase('База B')">
+                                <span class="base-letter">B</span>
+                                <span class="base-desc">Середні тони</span>
+                            </button>
+                            <button type="button" class="base-btn" data-base="База C" onclick="selectBase('База C')">
+                                <span class="base-letter">C</span>
+                                <span class="base-desc">Темні / Прозора</span>
+                            </button>
+                            <button type="button" class="base-btn" data-base="Інша" onclick="selectBase('Інша')">
+                                <span class="base-letter">?</span>
+                                <span class="base-desc">Інша / Без</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="create-base" value="База A">
+                        <input type="text" id="create-base-custom" class="form-input" style="display: none; margin-top: 8px;" placeholder="Вкажіть свою базу (наприклад: Base D, Прозора)...">
                     </div>
 
                     <div class="form-2col">
                         <div class="form-field">
                             <label class="form-label">КІЛЬКІСТЬ ВІДЕР</label>
-                            <input type="number" id="create-total-buckets" class="form-input" min="1" max="200" value="5" required>
+                            <input type="number" id="create-total-buckets" class="form-input" min="1" max="500" value="5" required>
                         </div>
                         <div class="form-field">
-                            <label class="form-label">ВАГА ВІДРА</label>
-                            <select id="create-bucket-weight" class="form-select">
-                                <option value="25 кг">25 кг</option>
-                                <option value="15 кг">15 кг</option>
+                            <label class="form-label">ФАСУВАННЯ / ВАГА</label>
+                            <select id="create-bucket-weight" class="form-select" onchange="onBucketWeightChange()">
+                                <option value="25 кг" selected>25 кг (Штукатурка)</option>
+                                <option value="15 кг">15 кг (СТ 16 / Ґрунт)</option>
+                                <option value="10 кг">10 кг (CT 721 / Фарба)</option>
+                                <option value="10 л">10 л (Відро 10л)</option>
+                                <option value="15 л">15 л (Відро 15л)</option>
+                                <option value="5 кг">5 кг (Мале 5кг)</option>
+                                <option value="5 л">5 л (Мале 5л)</option>
+                                <option value="4 кг">4 кг (Visage 4кг)</option>
+                                <option value="__custom__">➕ СВОЄ ФАСУВАННЯ...</option>
                             </select>
+                            <input type="text" id="create-bucket-weight-custom" class="form-input" style="display: none; margin-top: 8px;" placeholder="Наприклад: 20 кг, 12.5 кг...">
                         </div>
                     </div>
 
                     <div class="form-field">
                         <label class="form-label">РЕЦЕПТ / КОЛІР</label>
-                        <input type="text" id="create-color-code" class="form-input" placeholder="Nebraska 3 / Texas 4" required>
+                        <input type="text" id="create-color-code" class="form-input" placeholder="Nebraska 3 / Texas 4 / Pacific 2" required>
                     </div>
 
                     <button type="submit" class="btn-create-submit">СТВОРИТИ ТА ВІДПРАВИТИ В ЦЕХ</button>
@@ -1029,9 +1199,11 @@
                 else if (order.status === 'Accepted') shortStatus = 'READY';
                 else if (order.status === 'Ready') shortStatus = 'RAMP';
 
+                let baseTag = order.base ? order.base.replace('База ', '').trim() : '';
+
                 chip.innerHTML = `
                     <span class="chip-num">${order.order_number}</span>
-                    <span class="chip-sub">${shortStatus}</span>
+                    <span class="chip-sub">${baseTag ? baseTag + ' · ' : ''}${shortStatus}</span>
                 `;
                 strip.appendChild(chip);
             });
@@ -1055,7 +1227,21 @@
             document.getElementById('hero-client').innerText = o.client_name;
             document.getElementById('hero-material').innerText = o.material;
             document.getElementById('hero-color').innerText = o.color_code;
+
+            const baseEl = document.getElementById('hero-base');
+            if (baseEl) {
+                const baseVal = o.base || 'База A';
+                baseEl.innerText = baseVal.toUpperCase();
+                baseEl.className = 'spec-val-base ' + (baseVal.includes('C') ? 'base-C' : (baseVal.includes('B') ? 'base-B' : 'base-A'));
+            }
+
+            const weightEl = document.getElementById('hero-weight');
+            if (weightEl) weightEl.innerText = (o.bucket_weight || '25 кг').toUpperCase();
+
             document.getElementById('hero-progress').innerText = `${o.buckets_completed} / ${o.total_buckets}`;
+
+            const mixerWeightEl = document.getElementById('mixer-bucket-weight');
+            if (mixerWeightEl) mixerWeightEl.innerText = o.bucket_weight || '25 кг';
 
             const pill = document.getElementById('hero-status-pill');
             pill.className = 'hero-status-pill';
@@ -1097,6 +1283,15 @@
             }
         }
 
+        function parseBucketWeight(wStr) {
+            if (!wStr) return 25;
+            const match = ('' + wStr).match(/(\d+(?:[.,]\d+)?)/);
+            if (match) {
+                return parseFloat(match[1].replace(',', '.'));
+            }
+            return 25;
+        }
+
         function renderDispatcherMetrics() {
             const active = orders.filter(o => o.status !== 'Delivered');
             const mixing = orders.filter(o => o.status === 'Mixing');
@@ -1112,7 +1307,7 @@
             let countAccepted = 0;
 
             orders.forEach(o => {
-                const weight = o.bucket_weight.includes('15') ? 15 : 25;
+                const weight = parseBucketWeight(o.bucket_weight);
                 totalKg += o.buckets_completed * weight;
                 totalBuckets += o.buckets_completed;
 
@@ -1123,7 +1318,7 @@
                 }
             });
 
-            document.getElementById('disp-tonnage').innerText = `${totalKg} KG`;
+            document.getElementById('disp-tonnage').innerText = totalKg >= 1000 ? `${(totalKg / 1000).toFixed(2)} T` : `${Math.round(totalKg)} KG`;
             document.getElementById('disp-buckets-sub').innerText = `${totalBuckets} відер заколіровано`;
 
             const avgDelay = countAccepted > 0 ? Math.round(totalOfficeDelayMins / countAccepted) : 0;
@@ -1152,13 +1347,25 @@
                     delayHtml = `<div style="font-family: var(--font-mono); color: #fff; font-size: 0.72rem; margin-top: 4px;">Передано за ${officeTime} хв</div>`;
                 }
 
+                let baseBadge = '';
+                if (o.base) {
+                    const letter = o.base.replace('База ', '').trim();
+                    const bClass = letter === 'C' ? 'base-C' : (letter === 'B' ? 'base-B' : 'base-A');
+                    baseBadge = `<span class="base-badge ${bClass}">${o.base}</span>`;
+                }
+
                 card.innerHTML = `
                     <div class="disp-top-row">
-                        <span class="disp-order-num">${o.order_number}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span class="disp-order-num">${o.order_number}</span>
+                            ${baseBadge}
+                        </div>
                         <span class="hero-status-pill">${o.status}</span>
                     </div>
                     <div style="font-size: 1rem; font-weight: 700; color: #fff;">${o.material}</div>
-                    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">${o.client_name} // ${o.color_code}</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                        ${o.client_name} // <strong style="color: #fff;">${o.color_code}</strong> • <em>${o.bucket_weight}</em>
+                    </div>
                     <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff; margin-top: 6px;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
                     ${delayHtml}
                     <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
@@ -1173,18 +1380,117 @@
             });
         }
 
+        function selectBase(baseName) {
+            vibrateDevice(20);
+            document.getElementById('create-base').value = baseName;
+            document.querySelectorAll('.base-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-base') === baseName);
+            });
+            const customInp = document.getElementById('create-base-custom');
+            if (baseName === 'Інша') {
+                customInp.style.display = 'block';
+                customInp.focus();
+            } else {
+                customInp.style.display = 'none';
+            }
+        }
+
+        function onMaterialChange() {
+            vibrateDevice(20);
+            const sel = document.getElementById('create-material');
+            const val = sel.value;
+            const customInp = document.getElementById('create-material-custom');
+            
+            if (val === '__custom__') {
+                customInp.style.display = 'block';
+                customInp.focus();
+            } else {
+                customInp.style.display = 'none';
+                
+                // Smart auto-preset for bucket weight
+                const weightSel = document.getElementById('create-bucket-weight');
+                const customWeightInp = document.getElementById('create-bucket-weight-custom');
+                
+                if (val.includes('CT 16')) {
+                    weightSel.value = '15 кг';
+                    customWeightInp.style.display = 'none';
+                } else if (val.includes('CT 721')) {
+                    weightSel.value = '10 кг';
+                    customWeightInp.style.display = 'none';
+                } else if (val.includes('CT 48') || val.includes('CT 44') || val.includes('CT 54')) {
+                    weightSel.value = '15 л';
+                    customWeightInp.style.display = 'none';
+                } else if (val.includes('CT 174') || val.includes('CT 60') || val.includes('CT 74') || val.includes('CT 175') || val.includes('CT 64')) {
+                    weightSel.value = '25 кг';
+                    customWeightInp.style.display = 'none';
+                }
+            }
+        }
+
+        function onBucketWeightChange() {
+            vibrateDevice(20);
+            const sel = document.getElementById('create-bucket-weight');
+            const customInp = document.getElementById('create-bucket-weight-custom');
+            if (sel.value === '__custom__') {
+                customInp.style.display = 'block';
+                customInp.focus();
+            } else {
+                customInp.style.display = 'none';
+            }
+        }
+
         async function handleCreateOrder(e) {
             e.preventDefault();
             vibrateDevice([50, 50, 50]);
 
+            let finalMaterial = document.getElementById('create-material').value;
+            if (finalMaterial === '__custom__') {
+                finalMaterial = document.getElementById('create-material-custom').value.trim() || 'Власний матеріал Ceresit';
+            }
+
+            let finalWeight = document.getElementById('create-bucket-weight').value;
+            if (finalWeight === '__custom__') {
+                finalWeight = document.getElementById('create-bucket-weight-custom').value.trim() || '25 кг';
+            }
+
+            let finalBase = document.getElementById('create-base').value;
+            if (finalBase === 'Інша') {
+                const customBase = document.getElementById('create-base-custom').value.trim();
+                finalBase = customBase ? customBase : 'Без бази';
+            }
+
             const payload = {
-                order_number: document.getElementById('create-order-number').value,
-                client_name: document.getElementById('create-client-name').value,
-                material: document.getElementById('create-material').value,
+                order_number: document.getElementById('create-order-number').value.trim(),
+                client_name: document.getElementById('create-client-name').value.trim(),
+                material: finalMaterial,
                 total_buckets: parseInt(document.getElementById('create-total-buckets').value),
-                bucket_weight: document.getElementById('create-bucket-weight').value,
-                color_code: document.getElementById('create-color-code').value,
+                bucket_weight: finalWeight,
+                color_code: document.getElementById('create-color-code').value.trim(),
+                base: finalBase,
             };
+
+            const res = await fetch('/api/admin/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const created = await res.json();
+                document.getElementById('create-success-box').style.display = 'block';
+                document.getElementById('create-track-url').innerText = `https://cqd.yunexal.com/track/${created.token}`;
+
+                setTimeout(() => {
+                    document.getElementById('create-success-box').style.display = 'none';
+                    document.getElementById('create-order-number').value = '';
+                    document.getElementById('create-client-name').value = '';
+                    document.getElementById('create-color-code').value = '';
+                    fetchQueue();
+                    selectOrder(created.id);
+                    switchMode('workshop');
+                }, 1200);
+            }
+        }
 
             const res = await fetch('/api/admin/orders', {
                 method: 'POST',
