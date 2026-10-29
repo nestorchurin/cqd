@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CERESIT (CQD) — TRACKER</title>
+    <title>ТРЕКІНГ ЗАМОВЛЕННЯ // CERESIT</title>
     <link rel="manifest" href="/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -284,21 +284,75 @@
             50% { transform: scale(1.2); opacity: 0.7; }
             100% { transform: scale(1); opacity: 1; }
         }
+        /* Nothing OS Footer */
+        .board-footer {
+            margin-top: 36px;
+            padding-top: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .footer-sep {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+            margin-bottom: 8px;
+        }
+        .footer-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .footer-sten {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-dim);
+            border-radius: 999px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .footer-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--nothing-red);
+            box-shadow: 0 0 8px var(--nothing-red-glow);
+        }
+        .footer-title {
+            font-family: var(--font-dot);
+            font-size: 0.9rem;
+            letter-spacing: 1.5px;
+            color: #ffffff;
+            font-weight: 800;
+        }
+        .footer-note {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Top Nothing Bar -->
         <div class="top-brand">
-            <div class="brand-title">CERESIT // CQD</div>
+            <div class="brand-title">CERESIT // ТРЕКІНГ</div>
             <div class="live-dot-badge">
                 <div class="red-dot"></div>
-                <span>LIVE FEED</span>
+                <span>НАЖИВО</span>
             </div>
         </div>
 
         <div id="loading" class="widget-card" style="text-align: center; color: var(--text-muted); font-family: var(--font-mono);">
-            SEARCHING ORDER MATRIX...
+            ПОШУК ДАНИХ ЗАМОВЛЕННЯ...
         </div>
 
         <div id="order-container" style="display: none;">
@@ -309,30 +363,30 @@
 
                 <div class="specs-grid">
                     <div class="spec-box">
-                        <div class="spec-label">MATERIAL</div>
+                        <div class="spec-label">МАТЕРІАЛ</div>
                         <div id="order-material" class="spec-value">—</div>
                     </div>
                     <div class="spec-box">
-                        <div class="spec-label">COLOR RECIPE</div>
+                        <div class="spec-label">РЕЦЕПТ / КОЛІР</div>
                         <div id="order-color" class="spec-value">—</div>
                     </div>
                     <div class="spec-box">
-                        <div class="spec-label">CERESIT BASE</div>
+                        <div class="spec-label">БАЗА CERESIT</div>
                         <div id="order-base" class="spec-value">БАЗА A</div>
                     </div>
                     <div class="spec-box">
-                        <div class="spec-label">BUCKET SIZE</div>
+                        <div class="spec-label">ФАСУВАННЯ ВІДРА</div>
                         <div id="order-weight" class="spec-value">—</div>
                     </div>
                     <div class="spec-box" style="grid-column: span 2;">
-                        <div class="spec-label">BATCH QUANTITY</div>
+                        <div class="spec-label">КІЛЬКІСТЬ ВІДЕР У ПАРТІЇ</div>
                         <div id="order-buckets" class="spec-value">—</div>
                     </div>
                 </div>
 
                 <div class="status-banner">
-                    <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">CURRENT STATE:</span>
-                    <span id="order-status-badge" class="status-pill">PENDING</span>
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">ПОТОЧНИЙ СТАН:</span>
+                    <span id="order-status-badge" class="status-pill">ОЧІКУВАННЯ</span>
                 </div>
 
                 <div id="mixer-box" style="display: none;">
@@ -378,9 +432,21 @@
                 </div>
 
                 <button id="push-btn" class="btn-nothing" onclick="subscribeToPush()">
-                    <span>NOTIFY WHEN READY</span>
+                    <span>СПОВІСТИТИ КОЛИ БУДЕ ГОТОВО</span>
                 </button>
             </div>
+
+            <!-- Nothing OS Footer -->
+            <footer class="board-footer">
+                <div class="footer-sep"></div>
+                <div class="footer-wrap">
+                    <div class="footer-sten">
+                        <span class="footer-dot"></span>
+                        <span class="footer-title">Made For STEN</span>
+                    </div>
+                    <div class="footer-note">ПЕТ-ПРОЄКТ ДЛЯ СЕБЕ // НЕ ДЛЯ КОМПАНІЇ</div>
+                </div>
+            </footer>
         </div>
     </div>
 
@@ -392,7 +458,7 @@
             try {
                 const res = await fetch(`/api/public/orders/${token}`);
                 if (!res.ok) {
-                    document.getElementById('loading').innerText = 'ORDER NOT FOUND // 404';
+                    document.getElementById('loading').innerText = 'ЗАМОВЛЕННЯ НЕ ЗНАЙДЕНО // 404';
                     return;
                 }
                 const data = await res.json();
@@ -425,11 +491,11 @@
 
             if (data.status === 'Registered') {
                 document.getElementById('step-registered').className = 'step-row active';
-                document.getElementById('order-status-badge').innerText = 'REGISTERED';
+                document.getElementById('order-status-badge').innerText = 'ЗАРЕЄСТРОВАНО';
             } else if (data.status === 'TechCardPending') {
                 document.getElementById('step-registered').className = 'step-row done';
                 document.getElementById('step-pending').className = 'step-row active';
-                document.getElementById('order-status-badge').innerText = 'AWAITING CARD';
+                document.getElementById('order-status-badge').innerText = 'ОЧІКУЄ ТЕХКАРТУ';
             } else if (data.status === 'Accepted' || data.status === 'Mixing' || data.status === 'Paused') {
                 document.getElementById('step-registered').className = 'step-row done';
                 document.getElementById('step-pending').className = 'step-row done';
@@ -438,21 +504,21 @@
                 if (data.status === 'Mixing') {
                     mixerBox.style.display = 'block';
                     document.getElementById('mixer-progress').innerText = `ЗМІШУВАННЯ ВІДРА ${data.buckets_completed + 1} З ${data.total_buckets}`;
-                    document.getElementById('order-status-badge').innerText = `MIXING (${data.buckets_completed}/${data.total_buckets})`;
+                    document.getElementById('order-status-badge').innerText = `МІКСЕР (${data.buckets_completed}/${data.total_buckets})`;
                 } else {
-                    document.getElementById('order-status-badge').innerText = 'ACCEPTED';
+                    document.getElementById('order-status-badge').innerText = 'ПРИЙНЯТО В РОБОТУ';
                 }
             } else if (data.status === 'Ready' || data.status === 'Delivered') {
                 steps.forEach(s => document.getElementById(`step-${s}`).className = 'step-row done');
                 document.getElementById('step-ready').className = 'step-row done active';
-                document.getElementById('order-status-badge').innerText = 'READY FOR PICKUP';
+                document.getElementById('order-status-badge').innerText = 'ГОТОВО ДО ВИДАЧІ';
                 document.getElementById('order-status-badge').style.color = '#ffffff';
             }
         }
 
         async function subscribeToPush() {
             if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-                alert('Web Push is not supported in this browser.');
+                alert('Web Push не підтримується цим браузером.');
                 return;
             }
 
@@ -460,12 +526,12 @@
                 const reg = await navigator.serviceWorker.register('/sw.js');
                 const permission = await Notification.requestPermission();
                 if (permission !== 'granted') {
-                    alert('Notification permission denied.');
+                    alert('Доступ до сповіщень відхилено в налаштуваннях.');
                     return;
                 }
 
                 if (!vapidPublicKey) {
-                    alert('Server key not retrieved.');
+                    alert('Ключ сервера не отримано.');
                     return;
                 }
 
@@ -482,14 +548,14 @@
 
                 const btn = document.getElementById('push-btn');
                 btn.className = 'btn-nothing subscribed';
-                btn.innerHTML = '<span>NOTIFICATIONS ACTIVE</span>';
+                btn.innerHTML = '<span>СПОДІВАННЯ АКТИВНІ ✓</span>';
             } catch (err) {
                 console.error('Push error:', err);
                 const btn = document.getElementById('push-btn');
                 if (btn) {
-                    btn.innerHTML = '<span>PUSH UNAVAILABLE</span>';
+                    btn.innerHTML = '<span>СПОДІВАННЯ НЕДОСТУПНІ</span>';
                 }
-                alert('Помилка активації Push-сповіщень: ' + (err.message || err));
+                alert('Помилка активації сповіщень: ' + (err.message || err));
             }
         }
 
