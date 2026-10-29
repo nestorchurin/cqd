@@ -172,19 +172,6 @@
             text-transform: uppercase;
         }
 
-        /* Delay Notice */
-        .delay-pill {
-            background: rgba(215, 25, 33, 0.12);
-            border: 1px solid var(--nothing-red);
-            border-radius: 14px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
-            color: #ff858d;
-            font-family: var(--font-mono);
-            line-height: 1.4;
-        }
-
         /* Nothing Dot-Timeline */
         .nothing-timeline {
             display: flex;
@@ -348,11 +335,6 @@
                     <span id="order-status-badge" class="status-pill">PENDING</span>
                 </div>
 
-                <div id="delay-box" class="delay-pill" style="display: none;">
-                    <span style="color: var(--nothing-red); font-weight: 700;">● NOTICE:</span>
-                    <span id="delay-text">Очікується передача техкарти з офісу</span>
-                </div>
-
                 <div id="mixer-box" style="display: none;">
                     <div class="mixer-badge">
                         <div class="red-dot"></div>
@@ -439,9 +421,7 @@
                 el.className = 'step-row';
             });
 
-            const delayBox = document.getElementById('delay-box');
             const mixerBox = document.getElementById('mixer-box');
-            delayBox.style.display = 'none';
             mixerBox.style.display = 'none';
 
             if (data.status === 'Registered') {
@@ -451,8 +431,6 @@
                 document.getElementById('step-registered').className = 'step-row done';
                 document.getElementById('step-pending').className = 'step-row active';
                 document.getElementById('order-status-badge').innerText = 'AWAITING CARD';
-                delayBox.style.display = 'block';
-                document.getElementById('delay-text').innerText = 'Очікується передача технологічної карти з офісу до цеху.';
             } else if (data.status === 'Accepted' || data.status === 'Mixing' || data.status === 'Paused') {
                 document.getElementById('step-registered').className = 'step-row done';
                 document.getElementById('step-pending').className = 'step-row done';
@@ -462,10 +440,6 @@
                     mixerBox.style.display = 'block';
                     document.getElementById('mixer-progress').innerText = `ЗМІШУВАННЯ ВІДРА ${data.buckets_completed + 1} З ${data.total_buckets}`;
                     document.getElementById('order-status-badge').innerText = `MIXING (${data.buckets_completed}/${data.total_buckets})`;
-                } else if (data.status === 'Paused') {
-                    delayBox.style.display = 'block';
-                    document.getElementById('delay-text').innerText = `ЗАТРИМКА: ${data.delay_reason || 'Вимушена технічна зупинка'}`;
-                    document.getElementById('order-status-badge').innerText = 'HOLD';
                 } else {
                     document.getElementById('order-status-badge').innerText = 'ACCEPTED';
                 }

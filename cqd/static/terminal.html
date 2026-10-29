@@ -548,81 +548,19 @@
             margin-bottom: 14px;
         }
 
-        /* Collapsible Delays */
-        .delays-collapsible {
-            margin-top: 16px;
-            border: 1px solid rgba(215, 25, 33, 0.3);
-            border-radius: 20px;
-            background: rgba(14, 14, 14, 0.85);
-            overflow: hidden;
-        }
-        .delays-toggle-btn {
-            width: 100%;
-            padding: 14px 18px;
-            background: transparent;
-            border: none;
-            color: #ff99a0;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        .delays-body {
-            padding: 0 16px 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .btn-delay-item {
-            width: 100%;
-            min-height: 48px;
-            background: var(--surface-elevated);
-            border: 1px solid rgba(215, 25, 33, 0.4);
-            border-radius: 14px;
-            color: #ff858d;
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 10px 14px;
-            text-align: left;
-            transition: all 0.15s;
-        }
-        .btn-delay-item:active {
-            background: var(--nothing-red);
-            color: #ffffff;
-        }
-
-        .btn-resume {
-            width: 100%;
-            min-height: 64px;
-            background: #ffffff;
-            color: #000000;
-            border: none;
-            border-radius: 999px;
-            font-family: var(--font-body);
-            font-size: 1.05rem;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 6px 25px rgba(255, 255, 255, 0.2);
-            margin-top: 14px;
-        }
-
         /* =========================================
            DISPATCHER & ANALYTICS MODE (Mobile-First)
            ========================================= */
-        .metrics-grid-2x2 {
+        .metrics-grid-3 {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
             margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .metrics-grid-3 {
+                grid-template-columns: 1fr;
+            }
         }
         .metric-tile {
             background: rgba(18, 18, 18, 0.85);
@@ -677,17 +615,6 @@
             font-size: 1.4rem;
             font-weight: 900;
             color: #ffffff;
-        }
-        .disp-delay-pill {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            padding: 4px 10px;
-            border-radius: 999px;
-            background: rgba(215, 25, 33, 0.15);
-            border: 1px solid var(--nothing-red);
-            color: #ff858d;
-            margin-top: 6px;
-            display: inline-block;
         }
 
         /* Scan Recipe Camera Banner */
@@ -937,32 +864,6 @@
                         <span>ВОДІЙ ЗАБРАВ // ЗАКРИТИ В АРХІВ</span>
                     </button>
                 </div>
-
-                <!-- Collapsible Delays Accordion -->
-                <div class="delays-collapsible">
-                    <button class="delays-toggle-btn" onclick="toggleDelaysAccordion()">
-                        <span>⚠️ ФІКСАЦІЯ ЗАТРИМКИ / ПРОСТОЮ</span>
-                        <span id="delays-chevron">▾</span>
-                    </button>
-                    <div id="delays-body" class="delays-body" style="display: none;">
-                        <button class="btn-delay-item" onclick="reportDelay('Очікування рецепта / корекції від офісу')">
-                            ● ОЧІКУВАННЯ РЕЦЕПТА З ОФІСУ
-                        </button>
-                        <button class="btn-delay-item" onclick="reportDelay('Відсутня потрібна база на складі')">
-                            ● НЕМАЄ БАЗИ НА СКЛАДІ
-                        </button>
-                        <button class="btn-delay-item" onclick="reportDelay('Технічна промивка дозатора / калібрування')">
-                            ● ПРОМИВКА / КАЛІБРУВАННЯ ДОЗАТОРА
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Resume from Pause -->
-                <div id="resume-container" style="display: none;">
-                    <button class="btn-resume" onclick="resumeWork()">
-                        ВІДНОВИТИ РОБОТУ (ЗАКРИТИ ПРОСТІЙ)
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -972,8 +873,8 @@
          ========================================== -->
     <div id="view-dispatcher" style="display: none;">
         <div class="workspace">
-            <!-- 2x2 Metric Tiles -->
-            <div class="metrics-grid-2x2">
+            <!-- 3 Metric Tiles -->
+            <div class="metrics-grid-3">
                 <div class="metric-tile">
                     <div class="metric-tile-title">АКТИВНА ЧЕРГА</div>
                     <div class="metric-tile-val" id="disp-active-count">0</div>
@@ -985,12 +886,11 @@
                     <div class="metric-tile-sub" id="disp-buckets-sub">0 відер</div>
                 </div>
                 <div class="metric-tile">
-                    <div class="metric-tile-title">ЗАТРИМКА ОФІСУ</div>
-                    <div class="metric-tile-val" id="disp-avg-delay">0 M</div>
-                    <div class="metric-tile-sub">Сер. час передачі</div>
-                </div>
-                <div class="metric-tile">
                     <div class="metric-tile-title">ГОТОВО НА РАМПІ</div>
+                    <div class="metric-tile-val" id="disp-ready-count">0</div>
+                    <div class="metric-tile-sub">Чекають водіїв</div>
+                </div>
+            </div>
                     <div class="metric-tile-val" id="disp-ready-count">0</div>
                     <div class="metric-tile-sub">Чекають водіїв</div>
                 </div>
@@ -1203,7 +1103,6 @@
     <script>
         let orders = [];
         let activeOrderId = null;
-        let delaysExpanded = false;
         let currentMode = 'workshop';
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1408,13 +1307,6 @@
             }
         }
 
-        function toggleDelaysAccordion() {
-            vibrateDevice(25);
-            delaysExpanded = !delaysExpanded;
-            document.getElementById('delays-body').style.display = delaysExpanded ? 'flex' : 'none';
-            document.getElementById('delays-chevron').innerText = delaysExpanded ? '▴' : '▾';
-        }
-
         async function fetchQueue() {
             try {
                 const res = await fetch('/api/admin/orders');
@@ -1523,13 +1415,11 @@
             const stageMixing = document.getElementById('stage-mixing');
             const stageReady = document.getElementById('stage-ready');
             const stageArchive = document.getElementById('stage-archive');
-            const resumeContainer = document.getElementById('resume-container');
 
             stageAccept.style.display = 'none';
             stageMixing.style.display = 'none';
             stageReady.style.display = 'none';
             stageArchive.style.display = 'none';
-            resumeContainer.style.display = 'none';
 
             if (o.status === 'Registered' || o.status === 'TechCardPending') {
                 stageAccept.style.display = 'block';
@@ -1551,10 +1441,6 @@
                         decBox.style.display = o.buckets_completed > 0 ? 'block' : 'none';
                     }
                 }
-            } else if (o.status === 'Paused') {
-                pill.className = 'hero-status-pill paused';
-                pill.innerText = 'ПАУЗА: ' + (o.delay_reason || '');
-                resumeContainer.style.display = 'block';
             } else if (o.status === 'Ready') {
                 pill.className = 'hero-status-pill working';
                 pill.innerText = 'ГОТОВО ДО ВИДАЧІ';
@@ -1582,31 +1468,19 @@
 
             let totalKg = 0;
             let totalBuckets = 0;
-            let totalOfficeDelayMins = 0;
-            let countAccepted = 0;
 
             orders.forEach(o => {
                 const weight = parseBucketWeight(o.bucket_weight);
                 totalKg += o.buckets_completed * weight;
                 totalBuckets += o.buckets_completed;
-
-                if (o.accepted_at && o.created_at) {
-                    const delayMins = Math.round((o.accepted_at - o.created_at) / 60000);
-                    totalOfficeDelayMins += delayMins;
-                    countAccepted++;
-                }
             });
 
             document.getElementById('disp-tonnage').innerText = totalKg >= 1000 ? `${(totalKg / 1000).toFixed(2)} T` : `${Math.round(totalKg)} KG`;
             document.getElementById('disp-buckets-sub').innerText = `${totalBuckets} відер заколіровано`;
 
-            const avgDelay = countAccepted > 0 ? Math.round(totalOfficeDelayMins / countAccepted) : 0;
-            document.getElementById('disp-avg-delay').innerText = `${avgDelay} M`;
-
             // Render Orders Cards List
             const list = document.getElementById('disp-orders-list');
             list.innerHTML = '';
-            const now = Date.now();
 
             if (orders.length === 0) {
                 list.innerHTML = '<div style="text-align: center; padding: 32px 16px; font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); background: var(--surface); border: 1px dashed var(--border-dim); border-radius: 20px;">НЕМАЄ ЗАМОВЛЕНЬ У БАЗІ<br><span style="font-size: 0.72rem; margin-top: 6px; display: inline-block;">Створіть накладну у вкладці [+ НОВЕ]</span></div>';
@@ -1616,20 +1490,6 @@
             orders.forEach(o => {
                 const card = document.createElement('div');
                 card.className = 'disp-order-card';
-
-                let delayHtml = '';
-                const timeSinceCreated = Math.round((now - o.created_at) / 60000);
-
-                if (!o.accepted_at && o.status !== 'Delivered') {
-                    if (timeSinceCreated > 15) {
-                        delayHtml = `<div class="disp-delay-pill">⚠️ ЗАВИСЛО: ${timeSinceCreated} хв в офісі!</div>`;
-                    } else {
-                        delayHtml = `<div style="font-family: var(--font-mono); color: var(--text-muted); font-size: 0.72rem; margin-top: 4px;">Створено ${timeSinceCreated}хв тому</div>`;
-                    }
-                } else if (o.accepted_at) {
-                    const officeTime = Math.round((o.accepted_at - o.created_at) / 60000);
-                    delayHtml = `<div style="font-family: var(--font-mono); color: #fff; font-size: 0.72rem; margin-top: 4px;">Передано за ${officeTime} хв</div>`;
-                }
 
                 let baseBadge = '';
                 if (o.base) {
@@ -1651,7 +1511,6 @@
                         ${o.client_name} // <strong style="color: #fff;">${formatColor(o)}</strong> • <em>${o.bucket_weight}</em>
                     </div>
                     <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff; margin-top: 6px;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
-                    ${delayHtml}
                     <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
                         <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ ВОДІЯ ↗</a>
                         <div style="display: flex; gap: 8px; align-items: center;">
@@ -1949,23 +1808,6 @@
             activeOrderId = null;
             document.getElementById('order-view').style.display = 'none';
             document.getElementById('no-order-selected').style.display = 'block';
-            fetchQueue();
-        }
-
-        async function reportDelay(reason) {
-            playBeep(330, 0.2);
-            await fetch(`/api/terminal/orders/${activeOrderId}/pause`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ reason })
-            });
-            toggleDelaysAccordion();
-            fetchQueue();
-        }
-
-        async function resumeWork() {
-            playBeep(660, 0.1);
-            await fetch(`/api/terminal/orders/${activeOrderId}/resume`, { method: 'POST' });
             fetchQueue();
         }
 

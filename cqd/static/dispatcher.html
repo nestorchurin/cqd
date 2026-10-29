@@ -75,7 +75,7 @@
         /* Nothing Style Metric Widgets */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 16px;
             margin-bottom: 28px;
         }
@@ -284,11 +284,6 @@
             <div class="metric-sub" id="metric-buckets-sub">0 BUCKETS TINTED</div>
         </div>
         <div class="metric-widget">
-            <div class="metric-title">AVG OFFICE DELAY</div>
-            <div class="metric-val" id="metric-avg-delay">0 MIN</div>
-            <div class="metric-sub">OFFICE RESPONSIBILITY ZONE</div>
-        </div>
-        <div class="metric-widget">
             <div class="metric-title">READY ON RAMP</div>
             <div class="metric-val" id="metric-ready-count">0</div>
             <div class="metric-sub">AWAITING DRIVER PICKUP</div>
@@ -358,7 +353,6 @@
                             <th>MATERIAL</th>
                             <th>PROGRESS</th>
                             <th>STATUS</th>
-                            <th>TIMELINE</th>
                             <th>TRACK</th>
                         </tr>
                     </thead>
@@ -401,54 +395,23 @@
 
             let totalKg = 0;
             let totalBuckets = 0;
-            let totalOfficeDelayMins = 0;
-            let countAccepted = 0;
 
             orders.forEach(o => {
                 const weightPerBucket = o.bucket_weight.includes('15') ? 15 : 25;
                 totalKg += o.buckets_completed * weightPerBucket;
                 totalBuckets += o.buckets_completed;
-
-                if (o.accepted_at && o.created_at) {
-                    const delayMins = Math.round((o.accepted_at - o.created_at) / 60000);
-                    totalOfficeDelayMins += delayMins;
-                    countAccepted++;
-                }
             });
 
             document.getElementById('metric-tonnage').innerText = `${totalKg} KG`;
             document.getElementById('metric-buckets-sub').innerText = `${totalBuckets} BUCKETS PROCESSED`;
-
-            const avgDelay = countAccepted > 0 ? Math.round(totalOfficeDelayMins / countAccepted) : 0;
-            document.getElementById('metric-avg-delay').innerText = `${avgDelay} MIN`;
         }
 
         function renderTable() {
             const tbody = document.getElementById('orders-tbody');
             tbody.innerHTML = '';
 
-            const now = Date.now();
-
             orders.forEach(o => {
                 const tr = document.createElement('tr');
-
-                let delayHtml = '';
-                const timeSinceCreatedMins = Math.round((now - o.created_at) / 60000);
-
-                if (!o.accepted_at && o.status !== 'Delivered') {
-                    if (timeSinceCreatedMins > 15) {
-                        delayHtml = `<div class="delay-alert-pill">⚠️ DELAY: ${timeSinceCreatedMins} MIN IN OFFICE!</div>`;
-                    } else {
-                        delayHtml = `<div style="font-family: var(--font-mono); color: var(--text-muted); font-size: 0.75rem;">Created ${timeSinceCreatedMins}m ago</div>`;
-                    }
-                } else if (o.accepted_at) {
-                    const officeTime = Math.round((o.accepted_at - o.created_at) / 60000);
-                    delayHtml = `<div style="font-family: var(--font-mono); color: #ffffff; font-size: 0.75rem;">Dispatched in ${officeTime}m</div>`;
-                }
-
-                if (o.status === 'Paused') {
-                    delayHtml += `<div style="font-family: var(--font-mono); color: #ff858d; font-size: 0.75rem; margin-top: 2px;">PAUSE: ${o.delay_reason || ''}</div>`;
-                }
 
                 tr.innerHTML = `
                     <td><strong style="font-family: var(--font-dot); font-size: 1.15rem; letter-spacing: 1px;">${o.order_number}</strong></td>
@@ -459,7 +422,6 @@
                     </td>
                     <td style="font-family: var(--font-mono);">${o.buckets_completed} / ${o.total_buckets}</td>
                     <td><span class="status-badge status-${o.status}">${o.status}</span></td>
-                    <td>${delayHtml}</td>
                     <td>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <a href="/track/${o.token}" target="_blank" class="link-track">TRACK ↗</a>
