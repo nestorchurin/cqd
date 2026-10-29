@@ -801,9 +801,9 @@ async fn local_mark_delivered(
 
     let event = lock.record_event(
         &id,
-        "DeliveredToDriver",
+        "DeliveredToClient",
         "Колорист",
-        Some("Партія видана водію, замовлення закрито в архів"),
+        Some("Партія видана клієнту, замовлення закрито в архів"),
     )?;
 
     {

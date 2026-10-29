@@ -818,7 +818,7 @@
                             </div>
                         </div>
 
-                        <!-- Client / Driver -->
+                        <!-- Client -->
                         <div class="client-box">
                             <span class="box-label" style="margin: 0;">КЛІЄНТ:</span>
                             <span id="hero-client" class="client-name">—</span>
@@ -861,7 +861,7 @@
                 <!-- Stage 4: Archive Delivered -->
                 <div id="stage-archive" class="action-container" style="display: none;">
                     <button class="btn-giant btn-delivered" onclick="markDelivered()">
-                        <span>ВОДІЙ ЗАБРАВ // ЗАКРИТИ В АРХІВ</span>
+                        <span>КЛІЄНТ ЗАБРАВ // ЗАКРИТИ В АРХІВ</span>
                     </button>
                 </div>
             </div>
@@ -888,11 +888,7 @@
                 <div class="metric-tile">
                     <div class="metric-tile-title">ГОТОВО НА РАМПІ</div>
                     <div class="metric-tile-val" id="disp-ready-count">0</div>
-                    <div class="metric-tile-sub">Чекають водіїв</div>
-                </div>
-            </div>
-                    <div class="metric-tile-val" id="disp-ready-count">0</div>
-                    <div class="metric-tile-sub">Чекають водіїв</div>
+                    <div class="metric-tile-sub">Чекають клієнтів</div>
                 </div>
             </div>
 
@@ -1512,7 +1508,7 @@
                     </div>
                     <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff; margin-top: 6px;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
                     <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
-                        <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ ВОДІЯ ↗</a>
+                        <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ КЛІЄНТА ↗</a>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <button onclick="confirmDeleteOrder('${o.id}', '${o.order_number}');" class="btn-delete-chip" style="padding: 4px 10px; font-size: 0.7rem;">ВИДАЛИТИ ✕</button>
                             <span onclick="selectOrder('${o.id}'); switchMode('workshop');" style="font-family: var(--font-mono); font-size: 0.72rem; color: #fff; cursor: pointer; padding: 4px 10px; background: rgba(255, 255, 255, 0.1); border-radius: 999px;">В ЦЕХ ➔</span>
