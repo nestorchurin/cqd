@@ -1,3 +1,6 @@
 cqd/target/
 target/
 *.log
+
+__pycache__/
+*.pyc

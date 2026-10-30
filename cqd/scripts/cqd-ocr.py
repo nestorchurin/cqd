@@ -143,13 +143,17 @@ def extract_fields(full_ocr, spec_ocr=""):
         elif re.match(r'^\d{4}$', result["color_code"]):
             result["collection"] = "RAL Classic"
         
-    # 6. Weight / Tara (25 кг, 15 кг, 10 л, 14 кг)
+    # 6. Weight / Tara (25 кг, 15 кг, 10 л = 15 кг, 1.7 л = 2.5 кг, 2.5 кг)
     if re.search(r'25\s*(?:кг|kr|kg|xr)', combined, re.IGNORECASE):
         result["bucket_weight"] = "25 кг"
     elif re.search(r'15\s*(?:кг|kr|kg)', combined, re.IGNORECASE):
         result["bucket_weight"] = "15 кг"
-    elif re.search(r'10\s*(?:л|l)', combined.lower()):
+    elif re.search(r'10\s*(?:л|l)\b', combined, re.IGNORECASE):
         result["bucket_weight"] = "10 л"
+    elif re.search(r'1[.,]7\s*(?:л|l)\b', combined, re.IGNORECASE):
+        result["bucket_weight"] = "1.7 л"
+    elif re.search(r'2[.,]5\s*(?:кг|kr|kg)\b', combined, re.IGNORECASE):
+        result["bucket_weight"] = "2.5 кг"
     elif re.search(r'14\s*(?:кг|kr|kg)', combined, re.IGNORECASE):
         result["bucket_weight"] = "14 кг"
     elif re.search(r'5\s*(?:кг|л)', combined, re.IGNORECASE):

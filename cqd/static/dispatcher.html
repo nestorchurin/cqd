@@ -911,6 +911,7 @@
             <div class="rates-strip-left">
                 <div class="rate-chip"><span class="rate-dot"></span>25 КГ = <strong>50 ₴</strong> / ВІДРО</div>
                 <div class="rate-chip"><span class="rate-dot"></span>15 КГ (ТА МЕНШІ) = <strong>45 ₴</strong> / ВІДРО</div>
+                <div class="rate-chip" style="opacity: 0.85;"><span class="rate-dot" style="background: #888;"></span>КАЛІБРУВАННЯ: <strong>10л = 15кг</strong> • <strong>1.7л = 2.5кг</strong></div>
             </div>
             <div class="rate-chip">
                 <span class="rate-dot red"></span>АКТИВНА ЧЕРГА: <strong id="metric-active-count">0</strong> ПАРТІЙ (<span id="metric-mixing-sub">0 в міксері</span>)
@@ -976,8 +977,10 @@
                             <select id="bucket_weight">
                                 <option value="25 кг" selected>25 кг (Штукатурка)</option>
                                 <option value="15 кг">15 кг (СТ 16 / Ґрунт)</option>
+                                <option value="10 л">10 л = 15 кг (Відро 10л)</option>
+                                <option value="1.7 л">1.7 л = 2.5 кг (Фасування 1.7л)</option>
+                                <option value="2.5 кг">2.5 кг (Фасування 2.5кг)</option>
                                 <option value="10 кг">10 кг (CT 721 / Фарба)</option>
-                                <option value="10 л">10 л (Відро 10л)</option>
                                 <option value="15 л">15 л (Відро 15л)</option>
                                 <option value="5 кг">5 кг (Мале 5кг)</option>
                                 <option value="5 л">5 л (Мале 5л)</option>
@@ -1105,14 +1108,74 @@
             });
         }
 
+        // ==========================================
+        // MASS CALIBRATION ENGINE (Калібрування маси)
+        // 10 л = 15 кг, 1.7 л = 2.5 кг
+        // ==========================================
+        const MASS_CALIBRATION_TABLE = {
+            '10 л': 15.0,
+            '10л': 15.0,
+            '1.7 л': 2.5,
+            '1,7 л': 2.5,
+            '1.7л': 2.5,
+            '1,7л': 2.5,
+            '2.5 кг': 2.5,
+            '2,5 кг': 2.5,
+            '15 л': 22.5,
+            '15л': 22.5,
+            '5 л': 7.5,
+            '5л': 7.5,
+            '15 кг': 15.0,
+            '15кг': 15.0,
+            '25 кг': 25.0,
+            '25кг': 25.0
+        };
+
+        function getCalibratedWeightKg(wStr) {
+            if (!wStr) return 25.0;
+            const clean = ('' + wStr).trim().toLowerCase();
+            
+            // 1. Direct table match
+            if (MASS_CALIBRATION_TABLE[clean] !== undefined) {
+                return MASS_CALIBRATION_TABLE[clean];
+            }
+
+            // 2. Specific volume calibrations: 10 л = 15 кг, 1.7 л = 2.5 кг
+            if (/10\s*(?:л|l)\b/i.test(clean)) return 15.0;
+            if (/1[.,]7\s*(?:л|l)\b/i.test(clean)) return 2.5;
+            if (/2[.,]5\s*(?:кг|kg)\b/i.test(clean)) return 2.5;
+
+            // 3. General volume check (e.g. N л) with ~1.5 density factor
+            const matchVol = clean.match(/(\d+(?:[.,]\d+)?)\s*(?:л|l)\b/i);
+            if (matchVol) {
+                const liters = parseFloat(matchVol[1].replace(',', '.'));
+                if (Math.abs(liters - 10) < 0.1) return 15.0;
+                if (Math.abs(liters - 1.7) < 0.1) return 2.5;
+                return liters * 1.5;
+            }
+
+            // 4. Weight in kg or raw number
+            const match = clean.match(/(\d+(?:[.,]\d+)?)/);
+            if (match) {
+                return parseFloat(match[1].replace(',', '.'));
+            }
+            return 25.0;
+        }
+
         function parseBucketWeight(wStr) {
-            if (!wStr) return 25;
-            const match = ('' + wStr).match(/(\d+(?:[.,]\d+)?)/);
-            return match ? parseFloat(match[1].replace(',', '.')) : 25;
+            return getCalibratedWeightKg(wStr);
         }
 
         function getBucketRate(wStr) {
-            return parseBucketWeight(wStr) >= 20 ? 50 : 45;
+            return getCalibratedWeightKg(wStr) >= 20 ? 50 : 45;
+        }
+
+        function formatWeightWithCalib(wStr) {
+            if (!wStr) return '25 кг';
+            const clean = ('' + wStr).trim();
+            if (/10\s*л/i.test(clean)) return '10 л (= 15 кг)';
+            if (/1[.,]7\s*л/i.test(clean)) return '1.7 л (= 2.5 кг)';
+            return clean;
         }
 
         function setEarningsFilter(filter) {
@@ -1325,7 +1388,7 @@
                     <div class="day-order-item">
                         <div class="day-order-left">
                             <div class="day-order-client">${o.client_name}</div>
-                            <div class="day-order-specs">${o.material} • ${o.color_formatted} (${o.bucket_weight})</div>
+                            <div class="day-order-specs">${o.material} • ${o.color_formatted} (${formatWeightWithCalib(o.bucket_weight)})</div>
                         </div>
                         <div class="day-order-right">
                             <span class="day-order-rate">${o.time_str} · ${o.buckets_done} × ${o.rate_per_bucket} ₴</span>
