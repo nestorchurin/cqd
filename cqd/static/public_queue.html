@@ -976,7 +976,7 @@
 
         <!-- Search Input Widget -->
         <div class="search-box">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon" style="opacity: 0.6;">●</span>
             <input type="text" id="search-input" class="search-input" placeholder="ПОШУК ЗА КЛІЄНТОМ ЧИ МАТЕРІАЛОМ..." oninput="filterOrders()">
         </div>
 
@@ -1253,9 +1253,9 @@
             let palletBadge = '';
             if (o.on_pallet) {
                 const pShort = o.pallet_info ? o.pallet_info.split(':')[0] : 'На піддоні';
-                palletBadge = `<span class="pallet-pill" title="${o.pallet_info || ''}">📦 ${pShort}</span>`;
+                palletBadge = `<span class="pallet-pill" title="${o.pallet_info || ''}">${pShort}</span>`;
             } else {
-                palletBadge = `<span class="pallet-pill-no" title="Без піддона (ручне завантаження)">🚫 Без піддона</span>`;
+                palletBadge = `<span class="pallet-pill-no" title="Без піддона (ручне завантаження)">Без піддона</span>`;
             }
 
             const microDots = renderMicroDots(o.buckets_completed, o.total_buckets, o.status === 'Mixing');

@@ -971,7 +971,7 @@ async fn send_web_push_notifications(
     let client_part = if client_name.trim().is_empty() { String::new() } else { format!(" для {}", client_name.trim()) };
     let payload = serde_json::json!({
         "title": "Ceresit Колірування",
-        "body": format!("Замовлення{} ({} відер {}) заколіровано та готове до видачі! 🪣", client_part, buckets, material),
+        "body": format!("Замовлення{} ({} відер {}) заколіровано та готове до видачі!", client_part, buckets, material),
         "url": "/"
     }).to_string();
 

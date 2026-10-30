@@ -489,9 +489,9 @@
             const palletEl = document.getElementById('order-pallet');
             if (palletEl) {
                 if (data.on_pallet) {
-                    palletEl.innerText = data.pallet_info ? `📦 ${data.pallet_info}` : '📦 На піддоні';
+                    palletEl.innerText = data.pallet_info ? data.pallet_info : 'На піддоні';
                 } else {
-                    palletEl.innerText = '🚫 Без піддона (ручне завантаження в авто)';
+                    palletEl.innerText = 'Без піддона (ручне завантаження в авто)';
                 }
             }
 

@@ -1033,7 +1033,7 @@
 
                         <!-- Live Pallet Calculation Result Preview -->
                         <div id="pallet-calc-preview" style="font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.4; color: #ffffff; background: #000; border: 1px dashed var(--border-bright); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                            <span id="pallet-preview-icon" style="font-size: 1.2rem;">🚫</span>
+                            <span id="pallet-preview-icon" style="font-size: 0.85rem; font-weight: 700; color: var(--text-muted);">[—]</span>
                             <div id="pallet-calc-text" style="flex: 1;">Без піддона (ручне завантаження в авто / багажник)</div>
                         </div>
                     </div>
@@ -1075,7 +1075,7 @@
                         <div class="glyph-sq"></div>
                         <span>ЖУРНАЛ ВИРОБНИЦТВА НАЖИВО</span>
                     </div>
-                    <input type="text" id="search_table" class="search-table-input" placeholder="🔍 ПОШУК ЗА КЛІЄНТОМ ЧИ МАТЕРІАЛОМ..." oninput="renderTable()">
+                    <input type="text" id="search_table" class="search-table-input" placeholder="ПОШУК ЗА КЛІЄНТОМ ЧИ МАТЕРІАЛОМ..." oninput="renderTable()">
                 </div>
 
                 <div class="table-container">
@@ -1115,7 +1115,7 @@
             <div class="earnings-period-summary">
                 <span id="earn-period-text">Період: Всі зафіксовані робочі дні</span>
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" onclick="copyPeriodReport()" class="btn-copy-day" title="Скопіювати текстовий звіт за весь вибраний період">📋 СКОПІЮВАТИ ЗА ПЕРІОД</button>
+                    <button type="button" onclick="copyPeriodReport()" class="btn-copy-day" title="Скопіювати текстовий звіт за весь вибраний період">СКОПІЮВАТИ ЗА ПЕРІОД</button>
                     <span>РАЗОМ ЗАРОБЛЕНО: <strong id="earn-period-total">0 ₴</strong> (<span id="earn-period-buckets">0 відер</span>)</span>
                 </div>
             </div>
@@ -1457,7 +1457,7 @@
                             <span>${formatDayTitle(day.dateKey, day.timestamp)}</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <button onclick="copyDayReport('${day.dateKey}')" class="btn-copy-day" title="Скопіювати звіт за день для відправки власниці / у чат">📋 СКОПІЮВАТИ ДЕНЬ</button>
+                            <button onclick="copyDayReport('${day.dateKey}')" class="btn-copy-day" title="Скопіювати звіт за день для відправки власниці / у чат">СКОПІЮВАТИ ДЕНЬ</button>
                             <div class="day-cash-val">+${day.uah.toLocaleString('uk-UA')} ₴</div>
                         </div>
                     </div>
@@ -1521,15 +1521,15 @@
                 dayOrders.push(`• ${timeStr} | ${o.client_name}: ${o.material} (${formatWeightWithCalib(o.bucket_weight)}) — ${completed} в. × ${rate} ₴ = ${earned} ₴`);
             });
 
-            const text = `📊 ЗВІТ ПО КОЛІРУВАННЮ ЗА ${dateKey}
-💰 Заробіток: ${totalUah.toLocaleString('uk-UA')} ₴
-🪣 Всього відер: ${totalBuckets} (25кг: ${b25Count} шт • 15кг/інші: ${b15Count} шт)
+            const text = `ЗВІТ ПО КОЛІРУВАННЮ // ${dateKey}
+Заробіток: ${totalUah.toLocaleString('uk-UA')} ₴
+Всього відер: ${totalBuckets} (25кг: ${b25Count} шт • 15кг/інші: ${b15Count} шт)
 
 Деталізація по накладних:
 ${dayOrders.join('\n')}`;
 
             navigator.clipboard.writeText(text).then(() => {
-                showToast(`✓ Звіт за ${dateKey} скопійовано для Telegram/Viber!`);
+                showToast(`Звіт за ${dateKey} скопійовано для Telegram/Viber!`);
             }).catch(() => {
                 prompt('Скопіюйте текст звіту вручну:', text);
             });
@@ -1566,9 +1566,9 @@ ${dayOrders.join('\n')}`;
                 rows.push(`• ${dateStr} | ${o.client_name}: ${o.material} (${formatWeightWithCalib(o.bucket_weight)}) — ${completed} в. × ${rate} ₴ = ${earned} ₴`);
             });
 
-            const text = `📊 ПЕРІОДИЧНИЙ ЗВІТ // ${periodText.toUpperCase()}
-💰 Зароблено: ${periodTotal}
-🪣 Відер: ${periodBuckets}
+            const text = `ПЕРІОДИЧНИЙ ЗВІТ // ${periodText.toUpperCase()}
+Зароблено: ${periodTotal}
+Відер: ${periodBuckets}
 
 Виконані партії:
 ${rows.join('\n')}`;
@@ -1613,7 +1613,7 @@ ${rows.join('\n')}`;
                     fullPallets: 0,
                     remBuckets: 0,
                     desc: 'Без піддона (ручне завантаження)',
-                    shortBadge: '🚫 Без підд.'
+                    shortBadge: 'Без підд.'
                 };
             }
 
@@ -1647,11 +1647,11 @@ ${rows.join('\n')}`;
             if (rem === 0) {
                 if (fullPallets === 1) {
                     desc = `1 піддон (${palletCap} шт: ${maxRows} р. по ${perRow})`;
-                    shortBadge = `📦 1 підд. (${palletCap} шт)`;
+                    shortBadge = `1 підд. (${palletCap} шт)`;
                 } else {
                     const pWord = (fullPallets >= 2 && fullPallets <= 4) ? 'піддони' : 'піддонів';
                     desc = `${fullPallets} повних ${pWord} по ${palletCap} шт (${maxRows} р. по ${perRow})`;
-                    shortBadge = `📦 ${fullPallets} підд. (${total} шт)`;
+                    shortBadge = `${fullPallets} підд. (${total} шт)`;
                 }
             } else {
                 const remFullRows = Math.floor(rem / perRow);
@@ -1663,11 +1663,11 @@ ${rows.join('\n')}`;
 
                 if (fullPallets === 0) {
                     desc = `1 піддон на ${rem} шт (${remDesc})`;
-                    shortBadge = `📦 1 підд. (${rem} шт)`;
+                    shortBadge = `1 підд. (${rem} шт)`;
                 } else {
                     const pWord = (totalPallets >= 2 && totalPallets <= 4) ? 'піддони' : 'піддонів';
                     desc = `${totalPallets} ${pWord}: ${fullPallets} по ${palletCap} шт + 1 на ${rem} шт (${remDesc})`;
-                    shortBadge = `📦 ${totalPallets} підд. (${fullPallets}×${palletCap} + ${rem})`;
+                    shortBadge = `${totalPallets} підд. (${fullPallets}×${palletCap} + ${rem})`;
                 }
             }
 
@@ -1701,7 +1701,7 @@ ${rows.join('\n')}`;
                     modeBadge.innerText = 'БЕЗ ПІДДОНА';
                     modeBadge.style.color = 'var(--text-muted)';
                 }
-                if (previewIcon) previewIcon.innerText = '🚫';
+                if (previewIcon) previewIcon.innerText = '[—]';
                 if (previewText) previewText.innerText = 'Без піддона (ручне завантаження в авто / багажник)';
                 return;
             }
@@ -1711,7 +1711,7 @@ ${rows.join('\n')}`;
                 modeBadge.innerText = limitRows ? `ОБМЕЖЕННЯ ${limitRows} РЯДИ` : 'СТАНДАРТ';
                 modeBadge.style.color = '#ffffff';
             }
-            if (previewIcon) previewIcon.innerText = '📦';
+            if (previewIcon) previewIcon.innerText = '[П]';
 
             const info = calcPalletInfo(total, weight, true, limitRows);
             if (previewText) previewText.innerText = info.desc;
@@ -1757,9 +1757,9 @@ ${rows.join('\n')}`;
                 let palletBadge = '';
                 if (o.on_pallet) {
                     const pShort = o.pallet_info ? o.pallet_info.split(':')[0] : 'На піддоні';
-                    palletBadge = `<div style="font-family: var(--font-mono); font-size: 0.68rem; color: #fff; background: #1a1a1a; border: 1px solid var(--border-subtle); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" title="${o.pallet_info || ''}"><span>📦</span> <span>${pShort}</span></div>`;
+                    palletBadge = `<div style="font-family: var(--font-mono); font-size: 0.68rem; color: #fff; background: #1a1a1a; border: 1px solid var(--border-subtle); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" title="${o.pallet_info || ''}"><span>${pShort}</span></div>`;
                 } else {
-                    palletBadge = `<div style="font-family: var(--font-mono); font-size: 0.68rem; color: #888; background: #111; border: 1px solid rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" title="Без піддона (ручне завантаження в авто)"><span>🚫</span> <span>Без підд.</span></div>`;
+                    palletBadge = `<div style="font-family: var(--font-mono); font-size: 0.68rem; color: #888; background: #111; border: 1px solid rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" title="Без піддона (ручне завантаження в авто)"><span>Без підд.</span></div>`;
                 }
 
                 tr.innerHTML = `
