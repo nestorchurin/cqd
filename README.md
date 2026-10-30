@@ -3,6 +3,7 @@
 [![Rust](https://img.shields.io/badge/Language-Rust_1.85+-orange.svg?style=flat-square&logo=rust)](https://www.rust-lang.org/)
 [![Axum](https://img.shields.io/badge/Framework-Axum_0.8-black.svg?style=flat-square)](https://github.com/tokio-rs/axum)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Author](https://img.shields.io/badge/Author-Nestor_Churin-24A1DE.svg?style=flat-square&logo=github)](https://github.com/nestorchurin)
 [![Pet Project](https://img.shields.io/badge/Project-Community_Pet_Project-blue.svg?style=flat-square)]()
 [![Design](https://img.shields.io/badge/Design-Nothing_Aesthetics-111111.svg?style=flat-square)]()
 [![Security](https://img.shields.io/badge/Security-Dual--Port_Isolation-d71921.svg?style=flat-square)]()
@@ -303,7 +304,10 @@ sshpass -p 'ПАРОЛЬ' ssh root@<PROXMOX_HOST_IP> "
 
 ## 11. Авторство та ліцензія
 
-* **Автор проєкту:** **STEN** (розробка концепції, архітектури та реалізація).
-* **Призначення:** Відкритий некомерційний пет-проєкт для комюніті.
+* **Автор проєкту:** **Нестор Чурін (Nestor Churin)**
+* **GitHub:** [@nestorchurin](https://github.com/nestorchurin)
+* **Telegram:** [@nestor_churin](https://t.me/nestor_churin)
+* **Email:** [nestor@yunexal.com](mailto:nestor@yunexal.com)
+* **Призначення:** Відкритий некомерційний пет-проєкт для комюніті (Made For STEN).
 * **Ліцензія:** [MIT License](LICENSE).  
-  Вихідний код є повністю відкритим. Ви можете вільно використовувати, модифікувати, адаптувати та впроваджувати його як для особистих потреб, так і для власного бізнесу.
+  Copyright (c) 2026 Nestor Churin. Вихідний код є повністю відкритим для вільного некомерційного та комерційного використання, модифікації та впровадження.
