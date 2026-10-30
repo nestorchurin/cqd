@@ -10,7 +10,7 @@
     <title>CERESIT COMMAND CENTER // NOTHING</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@400..900&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Unbounded:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-black: #000000;
@@ -22,6 +22,7 @@
             --text-main: #f5f5f5;
             --text-muted: #888888;
             --nothing-red: #d71921;
+            --font-title: 'Unbounded', 'Space Grotesk', -apple-system, sans-serif;
             --font-dot: 'Doto', monospace;
             --font-body: 'Space Grotesk', -apple-system, sans-serif;
             --font-mono: 'Space Mono', monospace;
@@ -560,7 +561,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
         @media (max-width: 768px) {
             .metrics-grid-3 {
@@ -573,6 +574,10 @@
             border: 1px solid var(--border-dim);
             border-radius: 20px;
             padding: 16px;
+            transition: border-color 0.16s;
+        }
+        .metric-tile:hover {
+            border-color: rgba(255, 255, 255, 0.25);
         }
         .metric-tile-title {
             font-family: var(--font-mono);
@@ -589,12 +594,207 @@
             letter-spacing: 1.5px;
             color: #ffffff;
             line-height: 1;
+            text-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
         }
         .metric-tile-sub {
             font-family: var(--font-mono);
             font-size: 0.68rem;
             color: var(--text-muted);
             margin-top: 6px;
+        }
+
+        /* Tariff Rates Strip */
+        .rates-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(16, 16, 16, 0.75);
+            border: 1px solid var(--border-dim);
+            border-radius: 999px;
+            padding: 9px 18px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .rates-strip-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .rate-chip {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .rate-chip strong {
+            color: #ffffff;
+            font-weight: 800;
+        }
+        .rate-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+        }
+
+        /* Daily Earnings Section */
+        .earnings-section {
+            margin-top: 24px;
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dim);
+            border-radius: 24px;
+            padding: 20px;
+        }
+        .earnings-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .earnings-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .earn-filter-btn {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 5px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border-bright);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .earn-filter-btn.active {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+            font-weight: 700;
+        }
+        .days-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .day-card {
+            background: rgba(10, 10, 10, 0.75);
+            border: 1px solid var(--border-dim);
+            border-radius: 18px;
+            padding: 14px 18px;
+            transition: border-color 0.16s;
+        }
+        .day-card:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+        }
+        .day-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .day-title {
+            font-family: var(--font-title);
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .day-cash-val {
+            font-family: var(--font-dot);
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+        }
+        .day-stats-pills {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .day-stat-chip {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dim);
+            color: var(--text-muted);
+        }
+        .day-stat-chip strong {
+            color: #ffffff;
+        }
+        .day-orders-list {
+            border-top: 1px solid var(--border-dim);
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .day-order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 10px;
+            background: rgba(255, 255, 255, 0.025);
+            border-radius: 10px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .day-order-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+        .day-order-client {
+            font-family: var(--font-title);
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .day-order-specs {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+        .day-order-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .day-order-rate {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+        .day-order-cash {
+            font-family: var(--font-dot);
+            font-size: 1rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.5px;
         }
 
         /* Order Cards List in Dispatcher */
@@ -614,12 +814,18 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            gap: 8px;
         }
         .disp-order-num {
-            font-family: var(--font-dot);
-            font-size: 1.4rem;
-            font-weight: 900;
+            font-family: var(--font-title);
+            font-size: 1.15rem;
+            font-weight: 800;
             color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            flex: 1 1 auto;
         }
 
         /* Scan Recipe Camera Banner */
@@ -828,6 +1034,12 @@
                             <span class="box-label" style="margin: 0;">КЛІЄНТ:</span>
                             <span id="hero-client" class="client-name">—</span>
                         </div>
+
+                        <!-- Earnings Badge for Current Party -->
+                        <div id="hero-earn-box" style="margin-top: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-dim); border-radius: 14px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+                            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">ЗАРОБІТОК ЗА ПАРТІЮ:</div>
+                            <div id="hero-earn-val" style="font-family: var(--font-dot); font-size: 1.15rem; font-weight: 900; color: #ffffff;">+0 ₴</div>
+                        </div>
                     </div>
                 </div>
 
@@ -878,22 +1090,48 @@
          ========================================== -->
     <div id="view-dispatcher" style="display: none;">
         <div class="workspace">
-            <!-- 3 Metric Tiles -->
+            <!-- Top Earnings Metrics Grid -->
             <div class="metrics-grid-3">
                 <div class="metric-tile">
-                    <div class="metric-tile-title">АКТИВНА ЧЕРГА</div>
-                    <div class="metric-tile-val" id="disp-active-count">0</div>
-                    <div class="metric-tile-sub" id="disp-mixing-sub">0 в міксері</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="metric-tile-title">01. ЗА СЬОГОДНІ</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.6rem; font-weight: 800; color: #fff; background: rgba(215,25,33,0.2); border: 1px solid rgba(215,25,33,0.6); padding: 2px 6px; border-radius: 999px;">LIVE</span>
+                    </div>
+                    <div class="metric-tile-val" id="disp-earn-today">0 ₴</div>
+                    <div class="metric-tile-sub" id="disp-earn-today-sub">0 відер (25кг: 0 • 15кг: 0)</div>
                 </div>
                 <div class="metric-tile">
-                    <div class="metric-tile-title">ТОННАЖ ЗМІНИ</div>
-                    <div class="metric-tile-val" id="disp-tonnage">0 KG</div>
-                    <div class="metric-tile-sub" id="disp-buckets-sub">0 відер</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="metric-tile-title">02. ЦЕЙ ТИЖДЕНЬ</span>
+                        <span style="font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted); background: rgba(255,255,255,0.05); border: 1px solid var(--border-dim); padding: 2px 6px; border-radius: 999px;">ТИЖДЕНЬ</span>
+                    </div>
+                    <div class="metric-tile-val" id="disp-earn-week">0 ₴</div>
+                    <div class="metric-tile-sub" id="disp-earn-week-sub">0 відер заколіровано</div>
                 </div>
                 <div class="metric-tile">
-                    <div class="metric-tile-title">ГОТОВО ДО ВИДАЧІ</div>
-                    <div class="metric-tile-val" id="disp-ready-count">0</div>
-                    <div class="metric-tile-sub">Чекають клієнтів</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="metric-tile-title">03. ЦЕЙ МІСЯЦЬ</span>
+                        <span id="disp-earn-month-label" style="font-family: var(--font-mono); font-size: 0.6rem; color: var(--text-muted); background: rgba(255,255,255,0.05); border: 1px solid var(--border-dim); padding: 2px 6px; border-radius: 999px;">МІСЯЦЬ</span>
+                    </div>
+                    <div class="metric-tile-val" id="disp-earn-month">0 ₴</div>
+                    <div class="metric-tile-sub" id="disp-earn-month-sub">0 відер заколіровано</div>
+                </div>
+            </div>
+
+            <!-- Tariff Rates Strip -->
+            <div class="rates-strip">
+                <div class="rates-strip-left">
+                    <div class="rate-chip">
+                        <span class="rate-dot"></span>
+                        <span>25 КГ = <strong>50 ₴</strong> / ВІДРО</span>
+                    </div>
+                    <div class="rate-chip">
+                        <span class="rate-dot"></span>
+                        <span>15 КГ (ТА МЕНШІ) = <strong>45 ₴</strong> / ВІДРО</span>
+                    </div>
+                </div>
+                <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">
+                    АКТИВНА ЧЕРГА: <strong id="disp-active-count" style="color: #fff;">0</strong> (<span id="disp-mixing-sub">0 в міксері</span>)
                 </div>
             </div>
 
@@ -904,6 +1142,34 @@
             </div>
             <div id="disp-orders-list" class="dispatcher-orders-list">
                 <!-- Rendered by JS -->
+            </div>
+
+            <!-- Daily Earnings Breakdown Section -->
+            <div class="earnings-section">
+                <div class="earnings-header-row">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ffffff; box-shadow: 0 0 8px #ffffff;"></span>
+                        <span style="font-family: var(--font-title); font-size: 0.92rem; font-weight: 800; letter-spacing: 0.5px; color: #fff;">ЗВІТ ЗАРОБІТКУ ПО ДНЯХ // СТАТИСТИКА БАБОК</span>
+                    </div>
+                    <div class="earnings-filters">
+                        <button class="earn-filter-btn active" id="term-earn-filter-all" onclick="setEarningsFilter('all')">ВСІ ДНІ</button>
+                        <button class="earn-filter-btn" id="term-earn-filter-today" onclick="setEarningsFilter('today')">СЬОГОДНІ</button>
+                        <button class="earn-filter-btn" id="term-earn-filter-week" onclick="setEarningsFilter('week')">ТИЖДЕНЬ</button>
+                        <button class="earn-filter-btn" id="term-earn-filter-month" onclick="setEarningsFilter('month')">МІСЯЦЬ</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid var(--border-dim); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                    <span id="disp-earn-period-text" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">Період: Всі зафіксовані робочі дні</span>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                        <span id="disp-earn-period-total" style="font-family: var(--font-dot); font-size: 1.3rem; font-weight: 900; color: #fff;">0 ₴</span>
+                        <span id="disp-earn-period-buckets" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">(0 відер)</span>
+                    </div>
+                </div>
+
+                <div id="disp-days-feed" class="days-feed">
+                    <!-- Rendered by JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -1105,6 +1371,8 @@
         let orders = [];
         let activeOrderId = null;
         let currentMode = 'workshop';
+        let allEarningsOrders = [];
+        let earningsFilter = 'all';
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1307,11 +1575,30 @@
             }
         }
 
+        function getBucketRate(wStr) {
+            const kg = parseBucketWeight(wStr);
+            return kg >= 20 ? 50 : 45;
+        }
+
+        function setEarningsFilter(filter) {
+            vibrateDevice(20);
+            earningsFilter = filter;
+            ['all', 'today', 'week', 'month'].forEach(f => {
+                const btn = document.getElementById(`term-earn-filter-${f}`);
+                if (btn) btn.classList.toggle('active', f === filter);
+            });
+            renderEarnings();
+        }
+
         async function fetchQueue() {
             try {
-                const res = await fetch('/api/admin/orders');
-                if (res.ok) {
-                    orders = await res.json();
+                const [ordersRes, earnRes] = await Promise.all([
+                    fetch('/api/admin/orders'),
+                    fetch('/api/admin/earnings')
+                ]);
+
+                if (ordersRes.ok) {
+                    orders = await ordersRes.json();
                     renderQueue();
                     renderDispatcherMetrics();
                     if (activeOrderId) {
@@ -1336,6 +1623,11 @@
                         document.getElementById('order-view').style.display = 'none';
                         document.getElementById('no-order-selected').style.display = 'block';
                     }
+                }
+
+                if (earnRes.ok) {
+                    allEarningsOrders = await earnRes.json();
+                    renderEarnings();
                 }
             } catch (err) {
                 console.error(err);
@@ -1404,6 +1696,15 @@
 
             document.getElementById('hero-progress').innerText = `${o.buckets_completed} / ${o.total_buckets}`;
 
+            // Earnings badge for active party
+            const earnBox = document.getElementById('hero-earn-box');
+            const earnVal = document.getElementById('hero-earn-val');
+            if (earnBox && earnVal) {
+                const rate = getBucketRate(o.bucket_weight);
+                const partyEarned = o.total_buckets * rate;
+                earnVal.innerText = `+${partyEarned.toLocaleString('uk-UA')} ₴ (${o.total_buckets} × ${rate} ₴)`;
+            }
+
             const mixerWeightEl = document.getElementById('mixer-bucket-weight');
             if (mixerWeightEl) mixerWeightEl.innerText = o.bucket_weight || '25 кг';
 
@@ -1457,29 +1758,224 @@
             return 25;
         }
 
+        function formatDayTitle(dateKey, timestamp) {
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const yesterday = new Date(now.getTime() - 86400000);
+            const yestStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+            if (dateKey === todayStr) {
+                return 'СЬОГОДНІ';
+            } else if (dateKey === yestStr) {
+                return 'ВЧОРА';
+            } else {
+                const d = new Date(timestamp);
+                const day = String(d.getDate()).padStart(2, '0');
+                const mon = String(d.getMonth() + 1).padStart(2, '0');
+                const yr = d.getFullYear();
+                const weekDays = ['НД', 'ПН', 'ВТ', 'СР', 'ЧТ', 'ПТ', 'СБ'];
+                return `${day}.${mon}.${yr} [${weekDays[d.getDay()]}]`;
+            }
+        }
+
+        function renderEarnings() {
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const dayOfWeek = (now.getDay() + 6) % 7; // Monday = 0
+            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+            const stats = {
+                today: { uah: 0, b25: 0, b15: 0, total: 0 },
+                week: { uah: 0, b25: 0, b15: 0, total: 0 },
+                month: { uah: 0, b25: 0, b15: 0, total: 0 },
+                daysMap: {}
+            };
+
+            allEarningsOrders.forEach(o => {
+                const completed = o.buckets_completed || 0;
+                if (completed <= 0) return;
+
+                const tStr = o.ready_at || o.delivered_at || o.created_at;
+                const dateObj = tStr ? new Date(tStr) : new Date();
+                const orderTime = dateObj.getTime();
+
+                const rate = getBucketRate(o.bucket_weight);
+                const earnedForOrder = completed * rate;
+                const is25 = parseBucketWeight(o.bucket_weight) >= 20;
+
+                if (orderTime >= startOfToday) {
+                    stats.today.uah += earnedForOrder;
+                    stats.today.total += completed;
+                    if (is25) stats.today.b25 += completed;
+                    else stats.today.b15 += completed;
+                }
+                if (orderTime >= startOfWeek) {
+                    stats.week.uah += earnedForOrder;
+                    stats.week.total += completed;
+                    if (is25) stats.week.b25 += completed;
+                    else stats.week.b15 += completed;
+                }
+                if (orderTime >= startOfMonth) {
+                    stats.month.uah += earnedForOrder;
+                    stats.month.total += completed;
+                    if (is25) stats.month.b25 += completed;
+                    else stats.month.b15 += completed;
+                }
+
+                const yr = dateObj.getFullYear();
+                const mo = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const da = String(dateObj.getDate()).padStart(2, '0');
+                const dateKey = `${yr}-${mo}-${da}`;
+
+                if (!stats.daysMap[dateKey]) {
+                    const dayStart = new Date(yr, dateObj.getMonth(), dateObj.getDate()).getTime();
+                    stats.daysMap[dateKey] = {
+                        dateKey,
+                        timestamp: dayStart,
+                        uah: 0,
+                        b25: 0,
+                        b15: 0,
+                        total: 0,
+                        orders: []
+                    };
+                }
+
+                const dayEntry = stats.daysMap[dateKey];
+                dayEntry.uah += earnedForOrder;
+                dayEntry.total += completed;
+                if (is25) dayEntry.b25 += completed;
+                else dayEntry.b15 += completed;
+
+                const hours = String(dateObj.getHours()).padStart(2, '0');
+                const mins = String(dateObj.getMinutes()).padStart(2, '0');
+                dayEntry.orders.push({
+                    client_name: o.client_name,
+                    material: o.material,
+                    color_formatted: formatColor(o),
+                    bucket_weight: o.bucket_weight || '25 кг',
+                    buckets_done: completed,
+                    rate_per_bucket: rate,
+                    earned_uah: earnedForOrder,
+                    time_str: `${hours}:${mins}`
+                });
+            });
+
+            // Update Top 3 Cash Tiles
+            const todayValEl = document.getElementById('disp-earn-today');
+            const todaySubEl = document.getElementById('disp-earn-today-sub');
+            if (todayValEl) todayValEl.innerText = `${stats.today.uah.toLocaleString('uk-UA')} ₴`;
+            if (todaySubEl) todaySubEl.innerText = `${stats.today.total} відер (25кг: ${stats.today.b25} • 15кг: ${stats.today.b15})`;
+
+            const weekValEl = document.getElementById('disp-earn-week');
+            const weekSubEl = document.getElementById('disp-earn-week-sub');
+            if (weekValEl) weekValEl.innerText = `${stats.week.uah.toLocaleString('uk-UA')} ₴`;
+            if (weekSubEl) weekSubEl.innerText = `${stats.week.total} відер заколіровано`;
+
+            const monthNames = ['СІЧЕНЬ', 'ЛЮТИЙ', 'БЕРЕЗЕНЬ', 'КВІТЕНЬ', 'ТРАВЕНЬ', 'ЧЕРВЕНЬ', 'ЛИПЕНЬ', 'СЕРПЕНЬ', 'ВЕРЕСЕНЬ', 'ЖОВТЕНЬ', 'ЛИСТОПАД', 'ГРУДЕНЬ'];
+            const monthLabelEl = document.getElementById('disp-earn-month-label');
+            const monthValEl = document.getElementById('disp-earn-month');
+            const monthSubEl = document.getElementById('disp-earn-month-sub');
+            if (monthLabelEl) monthLabelEl.innerText = monthNames[now.getMonth()];
+            if (monthValEl) monthValEl.innerText = `${stats.month.uah.toLocaleString('uk-UA')} ₴`;
+            if (monthSubEl) monthSubEl.innerText = `${monthNames[now.getMonth()]} // ${stats.month.total} відер`;
+
+            // Filter days list
+            let sortedDays = Object.values(stats.daysMap).sort((a, b) => b.timestamp - a.timestamp);
+
+            let periodText = 'Всі зафіксовані робочі дні';
+            let periodTotal = 0;
+            let periodBuckets = 0;
+
+            if (earningsFilter === 'today') {
+                periodText = 'За сьогодні';
+                sortedDays = sortedDays.filter(d => d.timestamp >= startOfToday);
+            } else if (earningsFilter === 'week') {
+                periodText = 'За поточний тиждень';
+                sortedDays = sortedDays.filter(d => d.timestamp >= startOfWeek);
+            } else if (earningsFilter === 'month') {
+                periodText = `За ${monthNames[now.getMonth()].toLowerCase()}`;
+                sortedDays = sortedDays.filter(d => d.timestamp >= startOfMonth);
+            }
+
+            sortedDays.forEach(d => {
+                periodTotal += d.uah;
+                periodBuckets += d.total;
+            });
+
+            const periodTextEl = document.getElementById('disp-earn-period-text');
+            const periodTotalEl = document.getElementById('disp-earn-period-total');
+            const periodBucketsEl = document.getElementById('disp-earn-period-buckets');
+            if (periodTextEl) periodTextEl.innerText = `Період: ${periodText}`;
+            if (periodTotalEl) periodTotalEl.innerText = `${periodTotal.toLocaleString('uk-UA')} ₴`;
+            if (periodBucketsEl) periodBucketsEl.innerText = `(${periodBuckets} відер)`;
+
+            // Render Days Feed
+            const feedEl = document.getElementById('disp-days-feed');
+            if (!feedEl) return;
+            feedEl.innerHTML = '';
+
+            if (sortedDays.length === 0) {
+                feedEl.innerHTML = `
+                    <div style="text-align: center; padding: 28px 16px; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px;">
+                        НЕМАЄ ЗАКОЛІРОВАНИХ ВІДЕР ЗА ЦЕЙ ПЕРІОД
+                    </div>
+                `;
+                return;
+            }
+
+            sortedDays.forEach(day => {
+                const card = document.createElement('div');
+                card.className = 'day-card';
+
+                const ordersHtml = day.orders.map(o => `
+                    <div class="day-order-item">
+                        <div class="day-order-left">
+                            <div class="day-order-client">${o.client_name}</div>
+                            <div class="day-order-specs">${o.material} • ${o.color_formatted} (${o.bucket_weight})</div>
+                        </div>
+                        <div class="day-order-right">
+                            <span class="day-order-rate">${o.time_str} · ${o.buckets_done} × ${o.rate_per_bucket} ₴</span>
+                            <span class="day-order-cash">+${o.earned_uah.toLocaleString('uk-UA')} ₴</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="day-top">
+                        <div class="day-title">
+                            <div style="width: 7px; height: 7px; background: #fff; border-radius: 1px;"></div>
+                            <span>${formatDayTitle(day.dateKey, day.timestamp)}</span>
+                        </div>
+                        <div class="day-cash-val">+${day.uah.toLocaleString('uk-UA')} ₴</div>
+                    </div>
+                    <div class="day-stats-pills">
+                        <span class="day-stat-chip">25 кг: <strong>${day.b25}</strong> (${(day.b25 * 50).toLocaleString('uk-UA')} ₴)</span>
+                        <span class="day-stat-chip">15 кг / інші: <strong>${day.b15}</strong> (${(day.b15 * 45).toLocaleString('uk-UA')} ₴)</span>
+                        <span class="day-stat-chip">Всього: <strong>${day.total}</strong> відер</span>
+                    </div>
+                    <div class="day-orders-list">
+                        ${ordersHtml}
+                    </div>
+                `;
+                feedEl.appendChild(card);
+            });
+        }
+
         function renderDispatcherMetrics() {
             const active = orders.filter(o => o.status !== 'Delivered');
             const mixing = orders.filter(o => o.status === 'Mixing');
-            const ready = orders.filter(o => o.status === 'Ready');
 
-            document.getElementById('disp-active-count').innerText = active.length;
-            document.getElementById('disp-mixing-sub').innerText = `${mixing.length} в міксері`;
-            document.getElementById('disp-ready-count').innerText = ready.length;
+            const actEl = document.getElementById('disp-active-count');
+            if (actEl) actEl.innerText = active.length;
+            const mixEl = document.getElementById('disp-mixing-sub');
+            if (mixEl) mixEl.innerText = `${mixing.length} в міксері`;
 
-            let totalKg = 0;
-            let totalBuckets = 0;
-
-            orders.forEach(o => {
-                const weight = parseBucketWeight(o.bucket_weight);
-                totalKg += o.buckets_completed * weight;
-                totalBuckets += o.buckets_completed;
-            });
-
-            document.getElementById('disp-tonnage').innerText = totalKg >= 1000 ? `${(totalKg / 1000).toFixed(2)} T` : `${Math.round(totalKg)} KG`;
-            document.getElementById('disp-buckets-sub').innerText = `${totalBuckets} відер заколіровано`;
+            renderEarnings();
 
             // Render Orders Cards List
             const list = document.getElementById('disp-orders-list');
+            if (!list) return;
             list.innerHTML = '';
 
             if (orders.length === 0) {
@@ -1498,9 +1994,12 @@
                     baseBadge = `<span class="base-badge ${bClass}">${o.base}</span>`;
                 }
 
+                const rate = getBucketRate(o.bucket_weight);
+                const orderEarned = (o.buckets_completed || 0) * rate;
+
                 card.innerHTML = `
                     <div class="disp-top-row">
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center; min-width: 0; flex: 1 1 auto;">
                             <span class="disp-order-num">${o.client_name}</span>
                             ${baseBadge}
                         </div>
@@ -1510,7 +2009,10 @@
                     <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
                         <strong style="color: #fff;">${formatColor(o)}</strong> • <em>${o.bucket_weight}</em>
                     </div>
-                    <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff; margin-top: 6px;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px;">
+                        <div style="font-family: var(--font-dot); font-size: 1.1rem; color: #fff;">${o.buckets_completed} / ${o.total_buckets} <span style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">(${o.bucket_weight})</span></div>
+                        <div style="font-family: var(--font-dot); font-size: 1.05rem; font-weight: 900; color: #fff;">+${orderEarned} ₴ <span style="font-size: 0.7rem; font-family: var(--font-mono); color: var(--text-muted); font-weight: 400;">(${rate} ₴/в)</span></div>
+                    </div>
                     <div style="margin-top: 10px; border-top: 1px solid var(--border-dim); padding-top: 8px; display: flex; justify-content: space-between; align-items: center;">
                         <a href="/track/${o.token}" target="_blank" style="font-family: var(--font-mono); font-size: 0.75rem; color: #fff; text-decoration: underline;">ТРЕКІНГ КЛІЄНТА ↗</a>
                         <div style="display: flex; gap: 8px; align-items: center;">

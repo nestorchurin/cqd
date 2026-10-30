@@ -148,7 +148,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 14px;
-            margin-bottom: 28px;
+            margin-bottom: 14px;
         }
         .metric-widget {
             background: var(--surface-card);
@@ -160,10 +160,16 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
-            transition: border-color 0.16s;
+            transition: border-color 0.16s, transform 0.16s;
         }
         .metric-widget:hover {
             border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+        .metric-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .metric-title {
             font-family: var(--font-mono);
@@ -171,6 +177,27 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--text-muted);
+        }
+        .metric-badge-live {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: #ffffff;
+            background: rgba(215, 25, 33, 0.2);
+            border: 1px solid rgba(215, 25, 33, 0.6);
+            padding: 2px 7px;
+            border-radius: 999px;
+            letter-spacing: 0.5px;
+        }
+        .metric-badge-pill {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dim);
+            padding: 2px 7px;
+            border-radius: 999px;
         }
         .metric-val {
             font-family: var(--font-dot);
@@ -180,12 +207,240 @@
             letter-spacing: 1.5px;
             line-height: 1.1;
         }
+        .metric-val-cash {
+            color: #ffffff;
+            text-shadow: 0 0 16px rgba(255, 255, 255, 0.2);
+        }
         .metric-sub {
             font-family: var(--font-mono);
             font-size: 0.72rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        /* Tariff Rates Strip */
+        .rates-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(16, 16, 16, 0.75);
+            border: 1px solid var(--border-dim);
+            border-radius: 999px;
+            padding: 9px 20px;
+            margin-bottom: 26px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .rates-strip-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .rate-chip {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .rate-chip strong {
+            color: #ffffff;
+            font-weight: 800;
+        }
+        .rate-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ffffff;
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+        }
+        .rate-dot.red {
+            background: var(--nothing-red);
+            box-shadow: 0 0 8px var(--nothing-red);
+            animation: glyph-pulse 2s infinite;
+        }
+
+        /* Daily Earnings Section */
+        .earnings-section {
+            margin-top: 26px;
+            background: var(--surface-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-dim);
+            border-radius: 24px;
+            padding: 24px;
+        }
+        .earnings-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .earnings-filters {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .earn-filter-btn {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            padding: 5px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--border-bright);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .earn-filter-btn:hover {
+            color: #ffffff;
+            border-color: #ffffff;
+        }
+        .earn-filter-btn.active {
+            background: #ffffff;
+            color: #000000;
+            font-weight: 800;
+            border-color: #ffffff;
+        }
+        .earnings-period-summary {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-dim);
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .earnings-period-summary strong {
+            color: #ffffff;
+            font-family: var(--font-dot);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+        .days-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .day-card {
+            background: #080808;
+            border: 1px solid var(--border-dim);
+            border-radius: 18px;
+            padding: 18px 20px;
+            transition: border-color 0.15s;
+        }
+        .day-card:hover {
+            border-color: var(--border-bright);
+        }
+        .day-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .day-title {
+            font-family: var(--font-title);
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .day-cash-val {
+            font-family: var(--font-dot);
+            font-size: 1.55rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
+        }
+        .day-stats-pills {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .day-stat-chip {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            padding: 4px 11px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dim);
+            color: var(--text-muted);
+        }
+        .day-stat-chip strong {
+            color: #ffffff;
+        }
+        .day-orders-list {
+            border-top: 1px solid var(--border-dim);
+            padding-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .day-order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.025);
+            border-radius: 12px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .day-order-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .day-order-client {
+            font-family: var(--font-title);
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .day-order-specs {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .day-order-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .day-order-rate {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .day-order-cash {
+            font-family: var(--font-dot);
+            font-size: 1.15rem;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 0.8px;
+            white-space: nowrap;
         }
 
         /* Main Workspace Layout */
@@ -623,22 +878,42 @@
             </div>
         </div>
 
-        <!-- Metrics Grid -->
+        <!-- Earnings Metrics Grid (Nothing Aesthetics) -->
         <div class="metrics-grid">
             <div class="metric-widget">
-                <div class="metric-title">01. АКТИВНА ЧЕРГА</div>
-                <div class="metric-val" id="metric-active-count">0</div>
-                <div class="metric-sub" id="metric-mixing-sub">0 В МІКСЕРІ</div>
+                <div class="metric-header-row">
+                    <span class="metric-title">01. ЗА СЬОГОДНІ</span>
+                    <span class="metric-badge-live">ДЕНЬ</span>
+                </div>
+                <div class="metric-val metric-val-cash" id="earn-today-val">0 ₴</div>
+                <div class="metric-sub" id="earn-today-sub">0 відер (25кг: 0 • 15кг: 0)</div>
             </div>
             <div class="metric-widget">
-                <div class="metric-title">02. ВАГА ПАРТІЙ</div>
-                <div class="metric-val" id="metric-tonnage">0 KG</div>
-                <div class="metric-sub" id="metric-buckets-sub">0 ВІДЕР ЗАКОЛІРОВАНО</div>
+                <div class="metric-header-row">
+                    <span class="metric-title">02. ЦЕЙ ТИЖДЕНЬ</span>
+                    <span class="metric-badge-pill">7 ДНІВ</span>
+                </div>
+                <div class="metric-val metric-val-cash" id="earn-week-val">0 ₴</div>
+                <div class="metric-sub" id="earn-week-sub">0 відер заколіровано</div>
             </div>
             <div class="metric-widget">
-                <div class="metric-title">03. ГОТОВО ДО ВИДАЧІ</div>
-                <div class="metric-val" id="metric-ready-count">0</div>
-                <div class="metric-sub">ОЧІКУЄ ВИДАЧІ КЛІЄНТУ</div>
+                <div class="metric-header-row">
+                    <span class="metric-title">03. ЦЕЙ МІСЯЦЬ</span>
+                    <span class="metric-badge-pill" id="earn-month-label">МІСЯЦЬ</span>
+                </div>
+                <div class="metric-val metric-val-cash" id="earn-month-val">0 ₴</div>
+                <div class="metric-sub" id="earn-month-sub">0 відер заколіровано</div>
+            </div>
+        </div>
+
+        <!-- Tariff & Live Queue Strip -->
+        <div class="rates-strip">
+            <div class="rates-strip-left">
+                <div class="rate-chip"><span class="rate-dot"></span>25 КГ = <strong>50 ₴</strong> / ВІДРО</div>
+                <div class="rate-chip"><span class="rate-dot"></span>15 КГ (ТА МЕНШІ) = <strong>45 ₴</strong> / ВІДРО</div>
+            </div>
+            <div class="rate-chip">
+                <span class="rate-dot red"></span>АКТИВНА ЧЕРГА: <strong id="metric-active-count">0</strong> ПАРТІЙ (<span id="metric-mixing-sub">0 в міксері</span>)
             </div>
         </div>
 
@@ -769,6 +1044,31 @@
             </div>
         </div>
 
+        <!-- Daily Earnings Breakdown Section -->
+        <div class="earnings-section">
+            <div class="earnings-header-row">
+                <div class="panel-title">
+                    <div class="glyph-sq"></div>
+                    <span>ЗВІТ ЗАРОБІТКУ ПО ДНЯХ // СТАТИСТИКА БАБОК</span>
+                </div>
+                <div class="earnings-filters">
+                    <button type="button" class="earn-filter-btn active" id="btn-filter-all" onclick="setEarningsFilter('all')">ВСІ ДНІ</button>
+                    <button type="button" class="earn-filter-btn" id="btn-filter-today" onclick="setEarningsFilter('today')">СЬОГОДНІ</button>
+                    <button type="button" class="earn-filter-btn" id="btn-filter-week" onclick="setEarningsFilter('week')">ЦЕЙ ТИЖДЕНЬ</button>
+                    <button type="button" class="earn-filter-btn" id="btn-filter-month" onclick="setEarningsFilter('month')">ЦЕЙ МІСЯЦЬ</button>
+                </div>
+            </div>
+
+            <div class="earnings-period-summary">
+                <span id="earn-period-text">Період: Всі зафіксовані робочі дні</span>
+                <span>РАЗОМ ЗАРОБЛЕНО: <strong id="earn-period-total">0 ₴</strong> (<span id="earn-period-buckets">0 відер</span>)</span>
+            </div>
+
+            <div id="days-feed" class="days-feed">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
         <!-- Nothing Footer -->
         <footer class="board-footer">
             <div class="footer-sep"></div>
@@ -784,6 +1084,8 @@
 
     <script>
         let orders = [];
+        let allEarningsOrders = [];
+        let earningsFilter = 'all';
 
         function updateClock() {
             const now = new Date();
@@ -803,39 +1105,254 @@
             });
         }
 
+        function parseBucketWeight(wStr) {
+            if (!wStr) return 25;
+            const match = ('' + wStr).match(/(\d+(?:[.,]\d+)?)/);
+            return match ? parseFloat(match[1].replace(',', '.')) : 25;
+        }
+
+        function getBucketRate(wStr) {
+            return parseBucketWeight(wStr) >= 20 ? 50 : 45;
+        }
+
+        function setEarningsFilter(filter) {
+            earningsFilter = filter;
+            ['all', 'today', 'week', 'month'].forEach(f => {
+                const btn = document.getElementById(`btn-filter-${f}`);
+                if (btn) btn.classList.toggle('active', f === filter);
+            });
+            renderEarnings();
+        }
+
         async function fetchOrders() {
             try {
-                const res = await fetch('/api/admin/orders');
-                if (res.ok) {
-                    orders = await res.json();
+                const [ordersRes, earnRes] = await Promise.all([
+                    fetch('/api/admin/orders'),
+                    fetch('/api/admin/earnings')
+                ]);
+
+                if (ordersRes.ok) {
+                    orders = await ordersRes.json();
                     renderTable();
-                    renderMetrics();
+                }
+
+                if (earnRes.ok) {
+                    allEarningsOrders = await earnRes.json();
+                    renderEarnings();
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
             }
         }
 
-        function renderMetrics() {
+        function formatDayTitle(dateKey, timestamp) {
+            const d = new Date(timestamp);
+            const now = new Date();
+            const todayKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const yest = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+            const yestKey = `${yest.getFullYear()}-${String(yest.getMonth() + 1).padStart(2, '0')}-${String(yest.getDate()).padStart(2, '0')}`;
+
+            const months = ['СІЧНЯ', 'ЛЮТОГО', 'БЕРЕЗНЯ', 'КВІТНЯ', 'ТРАВНЯ', 'ЧЕРВНЯ', 'ЛИПНЯ', 'СЕРПНЯ', 'ВЕРЕСНЯ', 'ЖОВТНЯ', 'ЛИСТОПАДА', 'ГРУДНЯ'];
+            const monthName = months[d.getMonth()];
+            const dateFormatted = `${d.getDate()} ${monthName} ${d.getFullYear()}`;
+
+            if (dateKey === todayKey) {
+                return `СЬОГОДНІ · ${dateFormatted}`;
+            } else if (dateKey === yestKey) {
+                return `ВЧОРА · ${dateFormatted}`;
+            } else {
+                const daysOfWeek = ['НЕДІЛЯ', 'ПОНЕДІЛОК', 'ВІВТОРОК', 'СЕРЕДА', 'ЧЕТВЕР', 'П\'ЯТНИЦЯ', 'СУБОТА'];
+                return `${daysOfWeek[d.getDay()]} · ${dateFormatted}`;
+            }
+        }
+
+        function renderEarnings() {
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const dayOfWeek = now.getDay();
+            const distanceToMonday = (dayOfWeek + 6) % 7;
+            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - distanceToMonday).getTime();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+            // Active queue stats
             const active = orders.filter(o => o.status !== 'Delivered');
             const mixing = orders.filter(o => o.status === 'Mixing');
-            const ready = orders.filter(o => o.status === 'Ready');
+            const activeCountEl = document.getElementById('metric-active-count');
+            const mixingSubEl = document.getElementById('metric-mixing-sub');
+            if (activeCountEl) activeCountEl.innerText = active.length;
+            if (mixingSubEl) mixingSubEl.innerText = `${mixing.length} в міксері`;
 
-            document.getElementById('metric-active-count').innerText = active.length;
-            document.getElementById('metric-mixing-sub').innerText = `${mixing.length} В МІКСЕРІ`;
-            document.getElementById('metric-ready-count').innerText = ready.length;
+            let stats = {
+                today: { uah: 0, b25: 0, b15: 0, total: 0 },
+                week: { uah: 0, b25: 0, b15: 0, total: 0 },
+                month: { uah: 0, b25: 0, b15: 0, total: 0 },
+                daysMap: {}
+            };
 
-            let totalKg = 0;
-            let totalBuckets = 0;
+            const sourceList = (allEarningsOrders && allEarningsOrders.length > 0) ? allEarningsOrders : orders;
 
-            orders.forEach(o => {
-                const weightPerBucket = (o.bucket_weight && o.bucket_weight.includes('15')) ? 15 : 25;
-                totalKg += o.buckets_completed * weightPerBucket;
-                totalBuckets += o.buckets_completed;
+            sourceList.forEach(o => {
+                const completed = o.buckets_completed || (o.status === 'Ready' || o.status === 'Delivered' ? o.total_buckets : 0);
+                if (completed <= 0) return;
+
+                const rate = getBucketRate(o.bucket_weight);
+                const is25 = parseBucketWeight(o.bucket_weight) >= 20;
+                const earnedUah = completed * rate;
+
+                const ts = o.ready_at || o.delivered_at || o.created_at;
+                const d = new Date(ts);
+                const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+                if (!stats.daysMap[dayKey]) {
+                    stats.daysMap[dayKey] = {
+                        dateKey: dayKey,
+                        timestamp: new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(),
+                        uah: 0,
+                        b25: 0,
+                        b15: 0,
+                        total: 0,
+                        orders: []
+                    };
+                }
+
+                const dayObj = stats.daysMap[dayKey];
+                dayObj.uah += earnedUah;
+                dayObj.total += completed;
+                if (is25) dayObj.b25 += completed;
+                else dayObj.b15 += completed;
+
+                dayObj.orders.push({
+                    client_name: o.client_name,
+                    material: o.material,
+                    color_formatted: formatColor(o),
+                    bucket_weight: o.bucket_weight || '25 кг',
+                    buckets_done: completed,
+                    rate_per_bucket: rate,
+                    earned_uah: earnedUah,
+                    time_str: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+                });
+
+                if (ts >= startOfToday) {
+                    stats.today.uah += earnedUah;
+                    stats.today.total += completed;
+                    if (is25) stats.today.b25 += completed;
+                    else stats.today.b15 += completed;
+                }
+
+                if (ts >= startOfWeek) {
+                    stats.week.uah += earnedUah;
+                    stats.week.total += completed;
+                    if (is25) stats.week.b25 += completed;
+                    else stats.week.b15 += completed;
+                }
+
+                if (ts >= startOfMonth) {
+                    stats.month.uah += earnedUah;
+                    stats.month.total += completed;
+                    if (is25) stats.month.b25 += completed;
+                    else stats.month.b15 += completed;
+                }
             });
 
-            document.getElementById('metric-tonnage').innerText = totalKg >= 1000 ? `${(totalKg / 1000).toFixed(2)} T` : `${Math.round(totalKg)} KG`;
-            document.getElementById('metric-buckets-sub').innerText = `${totalBuckets} ВІДЕР ЗАКОЛІРОВАНО`;
+            // Update 3 KPI Tiles
+            const todayValEl = document.getElementById('earn-today-val');
+            const todaySubEl = document.getElementById('earn-today-sub');
+            if (todayValEl) todayValEl.innerText = `${stats.today.uah.toLocaleString('uk-UA')} ₴`;
+            if (todaySubEl) todaySubEl.innerText = `${stats.today.total} відер (25кг: ${stats.today.b25} • 15кг: ${stats.today.b15})`;
+
+            const weekValEl = document.getElementById('earn-week-val');
+            const weekSubEl = document.getElementById('earn-week-sub');
+            if (weekValEl) weekValEl.innerText = `${stats.week.uah.toLocaleString('uk-UA')} ₴`;
+            if (weekSubEl) weekSubEl.innerText = `${stats.week.total} відер заколіровано`;
+
+            const monthValEl = document.getElementById('earn-month-val');
+            const monthSubEl = document.getElementById('earn-month-sub');
+            const monthLabelEl = document.getElementById('earn-month-label');
+            const monthNames = ['СІЧЕНЬ', 'ЛЮТИЙ', 'БЕРЕЗЕНЬ', 'КВІТЕНЬ', 'ТРАВЕНЬ', 'ЧЕРВЕНЬ', 'ЛИПЕНЬ', 'СЕРПЕНЬ', 'ВЕРЕСЕНЬ', 'ЖОВТЕНЬ', 'ЛИСТОПАД', 'ГРУДЕНЬ'];
+            if (monthLabelEl) monthLabelEl.innerText = monthNames[now.getMonth()];
+            if (monthValEl) monthValEl.innerText = `${stats.month.uah.toLocaleString('uk-UA')} ₴`;
+            if (monthSubEl) monthSubEl.innerText = `${monthNames[now.getMonth()]} // ${stats.month.total} відер`;
+
+            // Filter days list
+            let sortedDays = Object.values(stats.daysMap).sort((a, b) => b.timestamp - a.timestamp);
+
+            let periodText = 'Всі зафіксовані робочі дні';
+            let periodTotal = 0;
+            let periodBuckets = 0;
+
+            if (earningsFilter === 'today') {
+                periodText = 'За сьогодні';
+                sortedDays = sortedDays.filter(d => d.timestamp >= startOfToday);
+            } else if (earningsFilter === 'week') {
+                periodText = 'За поточний тиждень';
+                sortedDays = sortedDays.filter(d => d.timestamp >= startOfWeek);
+            } else if (earningsFilter === 'month') {
+                periodText = `За ${monthNames[now.getMonth()].toLowerCase()}`;
+                sortedDays = sortedDays.filter(d => d.timestamp >= startOfMonth);
+            }
+
+            sortedDays.forEach(d => {
+                periodTotal += d.uah;
+                periodBuckets += d.total;
+            });
+
+            const periodTextEl = document.getElementById('earn-period-text');
+            const periodTotalEl = document.getElementById('earn-period-total');
+            const periodBucketsEl = document.getElementById('earn-period-buckets');
+            if (periodTextEl) periodTextEl.innerText = `Період: ${periodText}`;
+            if (periodTotalEl) periodTotalEl.innerText = `${periodTotal.toLocaleString('uk-UA')} ₴`;
+            if (periodBucketsEl) periodBucketsEl.innerText = `${periodBuckets} відер`;
+
+            // Render Days Feed
+            const feedEl = document.getElementById('days-feed');
+            if (!feedEl) return;
+            feedEl.innerHTML = '';
+
+            if (sortedDays.length === 0) {
+                feedEl.innerHTML = `
+                    <div style="text-align: center; padding: 36px 16px; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px;">
+                        НЕМАЄ ЗАКОЛІРОВАНИХ ВІДЕР ЗА ЦЕЙ ПЕРІОД
+                    </div>
+                `;
+                return;
+            }
+
+            sortedDays.forEach(day => {
+                const card = document.createElement('div');
+                card.className = 'day-card';
+
+                const ordersHtml = day.orders.map(o => `
+                    <div class="day-order-item">
+                        <div class="day-order-left">
+                            <div class="day-order-client">${o.client_name}</div>
+                            <div class="day-order-specs">${o.material} • ${o.color_formatted} (${o.bucket_weight})</div>
+                        </div>
+                        <div class="day-order-right">
+                            <span class="day-order-rate">${o.time_str} · ${o.buckets_done} × ${o.rate_per_bucket} ₴</span>
+                            <span class="day-order-cash">+${o.earned_uah.toLocaleString('uk-UA')} ₴</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="day-top">
+                        <div class="day-title">
+                            <div class="glyph-sq"></div>
+                            <span>${formatDayTitle(day.dateKey, day.timestamp)}</span>
+                        </div>
+                        <div class="day-cash-val">+${day.uah.toLocaleString('uk-UA')} ₴</div>
+                    </div>
+                    <div class="day-stats-pills">
+                        <span class="day-stat-chip">25 кг: <strong>${day.b25}</strong> (${(day.b25 * 50).toLocaleString('uk-UA')} ₴)</span>
+                        <span class="day-stat-chip">15 кг / інші: <strong>${day.b15}</strong> (${(day.b15 * 45).toLocaleString('uk-UA')} ₴)</span>
+                        <span class="day-stat-chip">Всього: <strong>${day.total}</strong> відер</span>
+                    </div>
+                    <div class="day-orders-list">
+                        ${ordersHtml}
+                    </div>
+                `;
+                feedEl.appendChild(card);
+            });
         }
 
         function getStatusInfo(status) {

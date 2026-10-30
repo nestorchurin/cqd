@@ -382,6 +382,13 @@ async fn local_get_archive(State(state): State<SharedState>) -> Result<Json<Vec<
     Ok(Json(archived))
 }
 
+async fn local_get_earnings(State(state): State<SharedState>) -> Result<Json<Vec<Order>>, StatusCode> {
+    let lock = state.read().await;
+    let db_conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let orders = db::load_all_orders_for_earnings(&db_conn).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Json(orders))
+}
+
 fn get_next_order_number(conn: &rusqlite::Connection) -> String {
     let mut max_num = 1040;
     if let Ok(mut stmt) = conn.prepare("SELECT order_number FROM orders") {
@@ -976,6 +983,7 @@ async fn main() {
         .route("/admin", get(local_dispatcher_page))
         .route("/api/admin/orders", get(local_list_orders).post(local_create_order))
         .route("/api/admin/archive", get(local_get_archive))
+        .route("/api/admin/earnings", get(local_get_earnings))
         .route("/api/admin/orders/{id}", delete(local_delete_order))
         .route("/api/terminal/orders/{id}/delete", post(local_delete_order))
         .route("/api/terminal/orders/{id}/accept", post(local_accept_order))

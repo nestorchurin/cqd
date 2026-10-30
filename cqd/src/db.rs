@@ -426,6 +426,50 @@ pub fn load_archived_orders(conn: &Connection, limit: usize) -> Result<Vec<Order
     Ok(list)
 }
 
+pub fn load_all_orders_for_earnings(conn: &Connection) -> Result<Vec<Order>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
+         FROM orders
+         ORDER BY COALESCE(ready_at, delivered_at, created_at) DESC"
+    )?;
+
+    let order_iter = stmt.query_map([], |row| {
+        let id: String = row.get(0)?;
+        let status_str: String = row.get(10)?;
+        let is_archived_int: i32 = row.get(19)?;
+
+        Ok(Order {
+            id,
+            order_number: row.get(1)?,
+            client_name: row.get(2)?,
+            material: row.get(3)?,
+            collection: row.get(4)?,
+            color_code: row.get(5)?,
+            base: row.get(6)?,
+            total_buckets: row.get(7)?,
+            bucket_weight: row.get(8)?,
+            buckets_completed: row.get(9)?,
+            status: OrderStatus::from_str(&status_str),
+            delay_reason: row.get(11)?,
+            token: row.get(12)?,
+            created_at: row.get(13)?,
+            accepted_at: row.get(14)?,
+            mixing_started_at: row.get(15)?,
+            mixing_duration_secs: row.get(16)?,
+            ready_at: row.get(17)?,
+            delivered_at: row.get(18)?,
+            is_archived: is_archived_int == 1,
+            events: vec![],
+        })
+    })?;
+
+    let mut list = Vec::new();
+    for o_res in order_iter {
+        list.push(o_res?);
+    }
+    Ok(list)
+}
+
 pub fn load_events_for_order(conn: &Connection, order_id: &str) -> Result<Vec<OrderEvent>> {
     let mut stmt = conn.prepare(
         "SELECT timestamp, iso_time, event_type, actor, details, prev_hash, signature
