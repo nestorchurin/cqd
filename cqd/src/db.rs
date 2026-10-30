@@ -65,7 +65,9 @@ pub fn init_db(db_path: &str) -> Result<(Connection, Vec<u8>, String)> {
             mixing_duration_secs INTEGER,
             ready_at INTEGER,
             delivered_at INTEGER,
-            is_archived INTEGER NOT NULL DEFAULT 0
+            is_archived INTEGER NOT NULL DEFAULT 0,
+            on_pallet INTEGER NOT NULL DEFAULT 1,
+            pallet_info TEXT
         );
 
         CREATE TABLE IF NOT EXISTS order_events (
@@ -96,8 +98,10 @@ pub fn init_db(db_path: &str) -> Result<(Connection, Vec<u8>, String)> {
         );"
     )?;
 
-    // Safe migration: add collection column if table already exists
+    // Safe migration: add columns if table already exists
     let _ = conn.execute("ALTER TABLE orders ADD COLUMN collection TEXT", []);
+    let _ = conn.execute("ALTER TABLE orders ADD COLUMN on_pallet INTEGER NOT NULL DEFAULT 1", []);
+    let _ = conn.execute("ALTER TABLE orders ADD COLUMN pallet_info TEXT", []);
 
     // 1. Get or generate signing secret
     let secret_res: Result<String> = conn.query_row(
@@ -211,8 +215,8 @@ pub fn create_order_with_event(
 
 pub fn insert_order(conn: &mut Connection, order: &Order) -> Result<()> {
     conn.execute(
-        "INSERT INTO orders (id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)",
+        "INSERT INTO orders (id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived, on_pallet, pallet_info)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
         params![
             order.id,
             order.order_number,
@@ -233,7 +237,9 @@ pub fn insert_order(conn: &mut Connection, order: &Order) -> Result<()> {
             order.mixing_duration_secs,
             order.ready_at,
             order.delivered_at,
-            if order.is_archived { 1 } else { 0 }
+            if order.is_archived { 1 } else { 0 },
+            if order.on_pallet { 1 } else { 0 },
+            order.pallet_info
         ],
     )?;
     Ok(())
@@ -295,7 +301,7 @@ pub fn delete_order(conn: &mut Connection, id: &str) -> Result<()> {
 
 pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
     let mut stmt = conn.prepare(
-        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
+        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived, on_pallet, pallet_info
          FROM orders WHERE is_archived = 0 ORDER BY created_at DESC"
     )?;
 
@@ -303,6 +309,8 @@ pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
+        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let pallet_info: Option<String> = row.get(21).ok();
 
         Ok(Order {
             id,
@@ -325,6 +333,8 @@ pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
             ready_at: row.get(17)?,
             delivered_at: row.get(18)?,
             is_archived: is_archived_int == 1,
+            on_pallet: on_pallet_int == 1,
+            pallet_info,
             events: vec![],
         })
     })?;
@@ -341,7 +351,7 @@ pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
 
 pub fn load_order_by_token(conn: &Connection, token: &str) -> Result<Option<Order>> {
     let mut stmt = conn.prepare(
-        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
+        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived, on_pallet, pallet_info
          FROM orders WHERE token = ?1 LIMIT 1"
     )?;
 
@@ -350,6 +360,8 @@ pub fn load_order_by_token(conn: &Connection, token: &str) -> Result<Option<Orde
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
+        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let pallet_info: Option<String> = row.get(21).ok();
 
         let mut order = Order {
             id: id.clone(),
@@ -372,6 +384,8 @@ pub fn load_order_by_token(conn: &Connection, token: &str) -> Result<Option<Orde
             ready_at: row.get(17)?,
             delivered_at: row.get(18)?,
             is_archived: is_archived_int == 1,
+            on_pallet: on_pallet_int == 1,
+            pallet_info,
             events: vec![],
         };
         order.events = load_events_for_order(conn, &id)?;
@@ -383,7 +397,7 @@ pub fn load_order_by_token(conn: &Connection, token: &str) -> Result<Option<Orde
 
 pub fn load_archived_orders(conn: &Connection, limit: usize) -> Result<Vec<Order>> {
     let mut stmt = conn.prepare(
-        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
+        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived, on_pallet, pallet_info
          FROM orders WHERE is_archived = 1 ORDER BY delivered_at DESC LIMIT ?1"
     )?;
 
@@ -391,6 +405,8 @@ pub fn load_archived_orders(conn: &Connection, limit: usize) -> Result<Vec<Order
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
+        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let pallet_info: Option<String> = row.get(21).ok();
 
         Ok(Order {
             id,
@@ -413,6 +429,8 @@ pub fn load_archived_orders(conn: &Connection, limit: usize) -> Result<Vec<Order
             ready_at: row.get(17)?,
             delivered_at: row.get(18)?,
             is_archived: is_archived_int == 1,
+            on_pallet: on_pallet_int == 1,
+            pallet_info,
             events: vec![],
         })
     })?;
@@ -429,7 +447,7 @@ pub fn load_archived_orders(conn: &Connection, limit: usize) -> Result<Vec<Order
 
 pub fn load_all_orders_for_earnings(conn: &Connection) -> Result<Vec<Order>> {
     let mut stmt = conn.prepare(
-        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived
+        "SELECT id, order_number, client_name, material, collection, color_code, base, total_buckets, bucket_weight, buckets_completed, status, delay_reason, token, created_at, accepted_at, mixing_started_at, mixing_duration_secs, ready_at, delivered_at, is_archived, on_pallet, pallet_info
          FROM orders
          ORDER BY COALESCE(ready_at, delivered_at, created_at) DESC"
     )?;
@@ -438,6 +456,8 @@ pub fn load_all_orders_for_earnings(conn: &Connection) -> Result<Vec<Order>> {
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
+        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let pallet_info: Option<String> = row.get(21).ok();
 
         Ok(Order {
             id,
@@ -460,6 +480,8 @@ pub fn load_all_orders_for_earnings(conn: &Connection) -> Result<Vec<Order>> {
             ready_at: row.get(17)?,
             delivered_at: row.get(18)?,
             is_archived: is_archived_int == 1,
+            on_pallet: on_pallet_int == 1,
+            pallet_info,
             events: vec![],
         })
     })?;

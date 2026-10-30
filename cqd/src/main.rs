@@ -91,6 +91,8 @@ pub struct Order {
     pub ready_at: Option<i64>,
     pub delivered_at: Option<i64>,
     pub is_archived: bool,
+    pub on_pallet: bool,
+    pub pallet_info: Option<String>,
     pub events: Vec<OrderEvent>,
 }
 
@@ -116,6 +118,72 @@ pub struct CreateOrderRequest {
     pub collection: Option<String>,
     pub color_code: Option<String>,
     pub base: Option<String>,
+    pub on_pallet: Option<bool>,
+    pub pallet_limit_rows: Option<u32>,
+    pub pallet_info: Option<String>,
+}
+
+pub fn calculate_pallet_info(
+    total_buckets: u32,
+    bucket_weight: &str,
+    on_pallet: bool,
+    limit_rows: Option<u32>,
+) -> (bool, Option<String>) {
+    if !on_pallet || total_buckets == 0 {
+        return (false, Some("Без піддона (ручне завантаження)".to_string()));
+    }
+
+    let w = bucket_weight.to_lowercase();
+    let (per_row, default_max_rows) = if w.contains("25") {
+        (8u32, 3u32)
+    } else if w.contains("15") || w.contains("10") || w.contains("14") {
+        (11u32, 4u32)
+    } else if w.contains("5") || w.contains("4") {
+        (16u32, 4u32)
+    } else if w.contains("1.7") || w.contains("2.5") {
+        (24u32, 4u32)
+    } else {
+        (8u32, 3u32)
+    };
+
+    let max_rows = match limit_rows {
+        Some(r) if r > 0 => r,
+        _ => default_max_rows,
+    };
+
+    let pallet_cap = per_row * max_rows;
+    let full_pallets = total_buckets / pallet_cap;
+    let rem = total_buckets % pallet_cap;
+    let total_pallets = (total_buckets + pallet_cap - 1) / pallet_cap;
+
+    let desc = if rem == 0 {
+        if full_pallets == 1 {
+            format!("1 піддон ({} шт: {} р. по {})", pallet_cap, max_rows, per_row)
+        } else {
+            let p_word = if (2..=4).contains(&full_pallets) { "піддони" } else { "піддонів" };
+            format!("{} {} по {} шт ({} р. по {})", full_pallets, p_word, pallet_cap, max_rows, per_row)
+        }
+    } else {
+        let rem_full_rows = rem / per_row;
+        let rem_loose = rem % per_row;
+        let mut rem_parts = Vec::new();
+        if rem_full_rows > 0 {
+            rem_parts.push(format!("{} р. по {}", rem_full_rows, per_row));
+        }
+        if rem_loose > 0 {
+            rem_parts.push(format!("{} шт", rem_loose));
+        }
+        let rem_desc = rem_parts.join(" + ");
+
+        if full_pallets == 0 {
+            format!("1 піддон на {} шт ({})", rem, rem_desc)
+        } else {
+            let p_word = if (2..=4).contains(&total_pallets) { "піддони" } else { "піддонів" };
+            format!("{} {}: {} по {} шт + 1 на {} шт ({})", total_pallets, p_word, full_pallets, pallet_cap, rem, rem_desc)
+        }
+    };
+
+    (true, Some(desc))
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -234,6 +302,8 @@ struct PublicOrderSummary {
     status: OrderStatus,
     token: String,
     created_at: i64,
+    on_pallet: bool,
+    pallet_info: Option<String>,
 }
 
 async fn public_get_queue(State(state): State<SharedState>) -> Json<Vec<PublicOrderSummary>> {
@@ -255,6 +325,8 @@ async fn public_get_queue(State(state): State<SharedState>) -> Json<Vec<PublicOr
             status: o.status.clone(),
             token: o.token.clone(),
             created_at: o.created_at,
+            on_pallet: o.on_pallet,
+            pallet_info: o.pallet_info.clone(),
         })
         .collect();
     list.sort_by(|a, b| b.created_at.cmp(&a.created_at));
@@ -506,6 +578,17 @@ async fn local_create_order(
         if t.is_empty() { None } else { Some(t) }
     });
 
+    let (final_on_pallet, calculated_pallet_info) = calculate_pallet_info(
+        req.total_buckets,
+        &req.bucket_weight,
+        req.on_pallet.unwrap_or(true),
+        req.pallet_limit_rows,
+    );
+    let final_pallet_info = req
+        .pallet_info
+        .filter(|s| !s.trim().is_empty())
+        .or(calculated_pallet_info);
+
     let order = Order {
         id: id.clone(),
         order_number: final_order_number.clone(),
@@ -527,6 +610,8 @@ async fn local_create_order(
         ready_at: None,
         delivered_at: None,
         is_archived: false,
+        on_pallet: final_on_pallet,
+        pallet_info: final_pallet_info,
         events: vec![],
     };
 

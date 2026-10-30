@@ -990,11 +990,11 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>КІЛЬКІСТЬ ВІДЕР</label>
-                            <input type="number" id="total_buckets" min="1" max="500" value="1" required>
+                            <input type="number" id="total_buckets" min="1" max="500" value="1" oninput="updatePalletPreview()" required>
                         </div>
                         <div class="form-group">
                             <label>ФАСУВАННЯ / ВАГА</label>
-                            <select id="bucket_weight">
+                            <select id="bucket_weight" onchange="updatePalletPreview()">
                                 <option value="25 кг" selected>25 кг (Штукатурка)</option>
                                 <option value="15 кг">15 кг (СТ 16 / Ґрунт)</option>
                                 <option value="10 л">10 л = 15 кг (Відро 10л)</option>
@@ -1005,6 +1005,36 @@
                                 <option value="5 кг">5 кг (Мале 5кг)</option>
                                 <option value="5 л">5 л (Мале 5л)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Pallet Packing Section -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 14px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-family: var(--font-unbounded); font-size: 0.74rem; letter-spacing: 0.05em; color: #ffffff;">
+                                <input type="checkbox" id="on_pallet" checked onchange="updatePalletPreview()" style="width: 18px; height: 18px; accent-color: #ffffff; cursor: pointer;">
+                                <span>СКЛАДАТИ НА ПІДДОН (ПАЛЕТУВАННЯ)</span>
+                            </label>
+                            <span id="pallet-mode-badge" style="font-family: var(--font-mono); font-size: 0.68rem; color: #ffffff; background: #111; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">СТАНДАРТ</span>
+                        </div>
+
+                        <div id="pallet-options-row" class="form-row" style="margin-bottom: 10px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 0.68rem; color: var(--text-muted);">ОБМЕЖЕННЯ ВИСОТИ (РЯДІВ НА ПІДДОНІ)</label>
+                                <select id="pallet_limit_rows" onchange="updatePalletPreview()" style="padding: 10px 14px; font-size: 0.85rem;">
+                                    <option value="0" selected>Стандартна висота (без обмежень)</option>
+                                    <option value="1">1 ряд (низька висота)</option>
+                                    <option value="2">2 ряди (для легкових авто / низьких бусів)</option>
+                                    <option value="3">3 ряди (макс. для 25 кг штукатурки)</option>
+                                    <option value="4">4 ряди (макс. для 15 кг / 10 л відер)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Live Pallet Calculation Result Preview -->
+                        <div id="pallet-calc-preview" style="font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.4; color: #ffffff; background: #000; border: 1px dashed var(--border-bright); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
+                            <span id="pallet-preview-icon" style="font-size: 1.2rem;">📦</span>
+                            <div id="pallet-calc-text" style="flex: 1;">1 піддон на 1 шт (1 шт)</div>
                         </div>
                     </div>
 
@@ -1575,6 +1605,118 @@ ${rows.join('\n')}`;
             return col ? `${col} ${code}` : code;
         }
 
+        function calcPalletInfo(total, weight, onPallet, limitRows) {
+            if (!onPallet || total <= 0) {
+                return {
+                    onPallet: false,
+                    totalPallets: 0,
+                    fullPallets: 0,
+                    remBuckets: 0,
+                    desc: 'Без піддона (ручне завантаження)',
+                    shortBadge: '🚫 Без підд.'
+                };
+            }
+
+            const w = (weight || '').toLowerCase();
+            let perRow = 8;
+            let defaultMaxRows = 3;
+
+            if (w.includes('25')) {
+                perRow = 8;
+                defaultMaxRows = 3;
+            } else if (w.includes('15') || w.includes('10') || w.includes('14')) {
+                perRow = 11;
+                defaultMaxRows = 4;
+            } else if (w.includes('5') || w.includes('4')) {
+                perRow = 16;
+                defaultMaxRows = 4;
+            } else if (w.includes('1.7') || w.includes('2.5')) {
+                perRow = 24;
+                defaultMaxRows = 4;
+            }
+
+            const maxRows = (limitRows && limitRows > 0) ? limitRows : defaultMaxRows;
+            const palletCap = perRow * maxRows;
+            const fullPallets = Math.floor(total / palletCap);
+            const rem = total % palletCap;
+            const totalPallets = Math.ceil(total / palletCap);
+
+            let desc = '';
+            let shortBadge = '';
+
+            if (rem === 0) {
+                if (fullPallets === 1) {
+                    desc = `1 піддон (${palletCap} шт: ${maxRows} р. по ${perRow})`;
+                    shortBadge = `📦 1 підд. (${palletCap} шт)`;
+                } else {
+                    const pWord = (fullPallets >= 2 && fullPallets <= 4) ? 'піддони' : 'піддонів';
+                    desc = `${fullPallets} повних ${pWord} по ${palletCap} шт (${maxRows} р. по ${perRow})`;
+                    shortBadge = `📦 ${fullPallets} підд. (${total} шт)`;
+                }
+            } else {
+                const remFullRows = Math.floor(rem / perRow);
+                const remLoose = rem % perRow;
+                const remParts = [];
+                if (remFullRows > 0) remParts.push(`${remFullRows} р. по ${perRow}`);
+                if (remLoose > 0) remParts.push(`${remLoose} шт`);
+                const remDesc = remParts.join(' + ');
+
+                if (fullPallets === 0) {
+                    desc = `1 піддон на ${rem} шт (${remDesc})`;
+                    shortBadge = `📦 1 підд. (${rem} шт)`;
+                } else {
+                    const pWord = (totalPallets >= 2 && totalPallets <= 4) ? 'піддони' : 'піддонів';
+                    desc = `${totalPallets} ${pWord}: ${fullPallets} по ${palletCap} шт + 1 на ${rem} шт (${remDesc})`;
+                    shortBadge = `📦 ${totalPallets} підд. (${fullPallets}×${palletCap} + ${rem})`;
+                }
+            }
+
+            return {
+                onPallet: true,
+                totalPallets,
+                fullPallets,
+                remBuckets: rem,
+                palletCap,
+                perRow,
+                maxRows,
+                desc,
+                shortBadge
+            };
+        }
+
+        function updatePalletPreview() {
+            const onPallet = document.getElementById('on_pallet').checked;
+            const total = parseInt(document.getElementById('total_buckets').value) || 1;
+            const weight = document.getElementById('bucket_weight').value;
+            const limitRows = parseInt(document.getElementById('pallet_limit_rows').value) || null;
+
+            const optRow = document.getElementById('pallet-options-row');
+            const modeBadge = document.getElementById('pallet-mode-badge');
+            const previewText = document.getElementById('pallet-calc-text');
+            const previewIcon = document.getElementById('pallet-preview-icon');
+
+            if (!onPallet) {
+                if (optRow) optRow.style.display = 'none';
+                if (modeBadge) {
+                    modeBadge.innerText = 'БЕЗ ПІДДОНА';
+                    modeBadge.style.color = 'var(--text-muted)';
+                }
+                if (previewIcon) previewIcon.innerText = '🚫';
+                if (previewText) previewText.innerText = 'Без піддона (ручне завантаження в авто / багажник)';
+                return;
+            }
+
+            if (optRow) optRow.style.display = 'flex';
+            if (modeBadge) {
+                modeBadge.innerText = limitRows ? `ОБМЕЖЕННЯ ${limitRows} РЯДИ` : 'СТАНДАРТ';
+                modeBadge.style.color = '#ffffff';
+            }
+            if (previewIcon) previewIcon.innerText = '📦';
+
+            const info = calcPalletInfo(total, weight, true, limitRows);
+            if (previewText) previewText.innerText = info.desc;
+        }
+
         function renderTable() {
             const tbody = document.getElementById('orders-tbody');
             tbody.innerHTML = '';
@@ -1612,6 +1754,14 @@ ${rows.join('\n')}`;
 
                 const colorFormatted = formatColor(o);
 
+                let palletBadge = '';
+                if (o.on_pallet) {
+                    const pShort = o.pallet_info ? o.pallet_info.split(':')[0] : 'На піддоні';
+                    palletBadge = `<div style="font-family: var(--font-mono); font-size: 0.68rem; color: #fff; background: #1a1a1a; border: 1px solid var(--border-subtle); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" title="${o.pallet_info || ''}"><span>📦</span> <span>${pShort}</span></div>`;
+                } else {
+                    palletBadge = `<div style="font-family: var(--font-mono); font-size: 0.68rem; color: #888; background: #111; border: 1px solid rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" title="Без піддона (ручне завантаження в авто)"><span>🚫</span> <span>Без підд.</span></div>`;
+                }
+
                 tr.innerHTML = `
                     <td>
                         <div class="table-client-name" title="${o.client_name}">${o.client_name}</div>
@@ -1626,6 +1776,7 @@ ${rows.join('\n')}`;
                     <td>
                         <div class="table-progress">${o.buckets_completed} / ${o.total_buckets}</div>
                         <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${o.bucket_weight}</div>
+                        ${palletBadge}
                     </td>
                     <td>
                         <span class="status-badge ${st.cls}">${st.label}</span>
@@ -1650,6 +1801,9 @@ ${rows.join('\n')}`;
             const bucketWeightVal = document.getElementById('bucket_weight').value;
             const collectionVal = document.getElementById('collection').value.trim();
             const colorCodeVal = document.getElementById('color_code').value.trim();
+            const onPalletVal = document.getElementById('on_pallet').checked;
+            const limitRowsVal = parseInt(document.getElementById('pallet_limit_rows').value) || null;
+            const palletInfoObj = calcPalletInfo(totalBucketsVal, bucketWeightVal, onPalletVal, limitRowsVal);
 
             const payload = {
                 order_number: null,
@@ -1660,6 +1814,9 @@ ${rows.join('\n')}`;
                 bucket_weight: bucketWeightVal,
                 collection: collectionVal || null,
                 color_code: colorCodeVal || null,
+                on_pallet: onPalletVal,
+                pallet_limit_rows: limitRowsVal,
+                pallet_info: palletInfoObj.desc,
             };
 
             try {
@@ -1677,6 +1834,7 @@ ${rows.join('\n')}`;
                     document.getElementById('client_name').value = '';
                     document.getElementById('collection').value = '';
                     document.getElementById('color_code').value = '';
+                    updatePalletPreview();
                     fetchOrders();
                 }
             } catch (err) {
@@ -1694,6 +1852,7 @@ ${rows.join('\n')}`;
             }
         }
 
+        updatePalletPreview();
         fetchOrders();
         setInterval(fetchOrders, 3000);
     </script>

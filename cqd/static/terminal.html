@@ -1055,6 +1055,18 @@
                             <span id="hero-client" class="client-name">—</span>
                         </div>
 
+                        <!-- Pallet Stacking Badge for Current Party -->
+                        <div id="hero-pallet-box" style="margin-top: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.15rem;" id="hero-pallet-icon">📦</span>
+                                <div>
+                                    <div style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase;">ФОРМАТ СКЛАДАННЯ / ПІДДОНИ:</div>
+                                    <div id="hero-pallet-text" style="font-family: var(--font-unbounded); font-size: 0.8rem; font-weight: 700; color: #ffffff; margin-top: 2px;">—</div>
+                                </div>
+                            </div>
+                            <span id="hero-pallet-pill" style="font-family: var(--font-mono); font-size: 0.68rem; padding: 3px 8px; border-radius: 6px; background: #111; border: 1px solid var(--border-subtle); color: #fff;">—</span>
+                        </div>
+
                         <!-- Earnings Badge for Current Party -->
                         <div id="hero-earn-box" style="margin-top: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-dim); border-radius: 14px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
                             <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">ЗАРОБІТОК ЗА ПАРТІЮ:</div>
@@ -1075,6 +1087,19 @@
                     <div class="mixer-header">
                         <span>КОЛІРУВАННЯ // ВІДРО <span id="current-bucket-idx">1</span> З <span id="total-bucket-idx">1</span> (<span id="mixer-bucket-weight">25 кг</span>)</span>
                         <span id="mixer-status-indicator" style="color: var(--nothing-red); font-weight: 700;">У РОБОТІ</span>
+                    </div>
+
+                    <!-- Smart Pallet Stacking Assistant Widget -->
+                    <div id="pallet-stack-assistant" style="margin-bottom: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-bright); border-radius: 16px; padding: 14px 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-family: var(--font-unbounded); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--text-muted);">СКЛАДАННЯ НА ПІДДОН:</span>
+                            <span id="stack-pallet-badge" style="font-family: var(--font-dot); font-size: 0.88rem; font-weight: 800; color: #ffffff;">ПІДДОН 1 З 3</span>
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;">
+                            <span id="stack-pallet-icon" style="font-size: 1.3rem;">📦</span>
+                            <div id="stack-placement-text" style="font-family: var(--font-unbounded); font-size: 1.05rem; font-weight: 700; color: #ffffff;">РЯД 1 • ВІДРО 1 З 8</div>
+                        </div>
+                        <div id="stack-status-hint" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-sub);">Поточне відро кладіть на Піддон #1 (1-й ряд)</div>
                     </div>
 
                     <button id="btn-bucket-add" class="btn-giant btn-bucket-add" onclick="incrementBucket()">
@@ -1343,7 +1368,7 @@
                     <div class="form-2col">
                         <div class="form-field">
                             <label class="form-label">КІЛЬКІСТЬ ВІДЕР</label>
-                            <input type="number" id="create-total-buckets" class="form-input" min="1" max="500" value="5" required>
+                            <input type="number" id="create-total-buckets" class="form-input" min="1" max="500" value="5" oninput="updateTerminalPalletPreview()" required>
                         </div>
                         <div class="form-field">
                             <label class="form-label">ФАСУВАННЯ / ВАГА</label>
@@ -1360,7 +1385,35 @@
                                 <option value="4 кг">4 кг (Visage 4кг)</option>
                                 <option value="__custom__">➕ СВОЄ ФАСУВАННЯ...</option>
                             </select>
-                            <input type="text" id="create-bucket-weight-custom" class="form-input" style="display: none; margin-top: 8px;" placeholder="Наприклад: 20 кг, 12.5 кг...">
+                            <input type="text" id="create-bucket-weight-custom" class="form-input" style="display: none; margin-top: 8px;" placeholder="Наприклад: 20 кг, 12.5 кг..." oninput="updateTerminalPalletPreview()">
+                        </div>
+                    </div>
+
+                    <!-- Pallet Packing Section -->
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-family: var(--font-unbounded); font-size: 0.74rem; letter-spacing: 0.05em; color: #ffffff;">
+                                <input type="checkbox" id="create-on-pallet" checked onchange="updateTerminalPalletPreview()" style="width: 18px; height: 18px; accent-color: #ffffff; cursor: pointer;">
+                                <span>СКЛАДАТИ НА ПІДДОН (ПАЛЕТУВАННЯ)</span>
+                            </label>
+                            <span id="create-pallet-badge" style="font-family: var(--font-mono); font-size: 0.68rem; color: #ffffff; background: #111; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">СТАНДАРТ</span>
+                        </div>
+
+                        <div id="create-pallet-options-row" class="form-field" style="margin-bottom: 10px;">
+                            <label class="form-label">ОБМЕЖЕННЯ ВИСОТИ (РЯДІВ НА ПІДДОНІ)</label>
+                            <select id="create-pallet-limit-rows" class="form-select" onchange="updateTerminalPalletPreview()">
+                                <option value="0" selected>Стандартна висота (без обмежень)</option>
+                                <option value="1">1 ряд (низька висота)</option>
+                                <option value="2">2 ряди (для легкових авто / низьких бусів)</option>
+                                <option value="3">3 ряди (макс. для 25 кг штукатурки)</option>
+                                <option value="4">4 ряди (макс. для 15 кг / 10 л відер)</option>
+                            </select>
+                        </div>
+
+                        <!-- Live Pallet Calculation Result Preview -->
+                        <div id="create-pallet-preview" style="font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.4; color: #ffffff; background: #000; border: 1px dashed var(--border-bright); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
+                            <span id="create-pallet-preview-icon" style="font-size: 1.2rem;">📦</span>
+                            <div id="create-pallet-preview-text" style="flex: 1;">1 піддон на 5 шт (5 шт)</div>
                         </div>
                     </div>
 
@@ -1748,10 +1801,13 @@
                 else if (order.status === 'Ready') shortStatus = 'ГОТОВО';
 
                 let baseTag = order.base ? order.base.replace('База ', '').trim() : '';
+                let palletChip = order.on_pallet
+                    ? (order.pallet_info ? order.pallet_info.split(':')[0] : '📦 Піддон')
+                    : '🚫 Без підд.';
 
                 chip.innerHTML = `
                     <span class="chip-num">${order.client_name}</span>
-                    <span class="chip-sub">${baseTag ? baseTag + ' · ' : ''}${shortStatus}</span>
+                    <span class="chip-sub">${baseTag ? baseTag + ' · ' : ''}${palletChip} · ${shortStatus}</span>
                 `;
                 strip.appendChild(chip);
             });
@@ -1765,6 +1821,77 @@
                 renderQueue();
                 renderActiveOrder(order);
             }
+        }
+
+        function renderPalletStackingAssistant(o) {
+            const assistant = document.getElementById('pallet-stack-assistant');
+            if (!assistant) return;
+
+            if (!o.on_pallet) {
+                assistant.style.display = 'block';
+                document.getElementById('stack-pallet-badge').innerText = 'РУЧНЕ ЗАВАНТАЖЕННЯ';
+                document.getElementById('stack-pallet-badge').style.color = 'var(--text-muted)';
+                document.getElementById('stack-pallet-icon').innerText = '🚫';
+                document.getElementById('stack-placement-text').innerText = 'БЕЗ ПІДДОНА';
+                document.getElementById('stack-status-hint').innerText = 'Складайте відра окремо або одразу вантажте в авто клієнта';
+                return;
+            }
+
+            assistant.style.display = 'block';
+            document.getElementById('stack-pallet-icon').innerText = '📦';
+            document.getElementById('stack-pallet-badge').style.color = '#ffffff';
+
+            const w = (o.bucket_weight || '').toLowerCase();
+            let perRow = 8;
+            let defaultMaxRows = 3;
+            if (w.includes('25')) {
+                perRow = 8;
+                defaultMaxRows = 3;
+            } else if (w.includes('15') || w.includes('10') || w.includes('14')) {
+                perRow = 11;
+                defaultMaxRows = 4;
+            } else if (w.includes('5') || w.includes('4')) {
+                perRow = 16;
+                defaultMaxRows = 4;
+            } else if (w.includes('1.7') || w.includes('2.5')) {
+                perRow = 24;
+                defaultMaxRows = 4;
+            }
+
+            // Check if limit rows is noted in pallet_info
+            let maxRows = defaultMaxRows;
+            if (o.pallet_info) {
+                const matchRows = o.pallet_info.match(/(\d+)\s*р\.\s*по/);
+                if (matchRows) maxRows = parseInt(matchRows[1]) || defaultMaxRows;
+            }
+
+            const palletCap = perRow * maxRows;
+            const totalPallets = Math.ceil(o.total_buckets / palletCap);
+
+            // Current bucket is (o.buckets_completed + 1)
+            const curIdx = o.buckets_completed; // 0-based
+            const curPalletNum = Math.floor(curIdx / palletCap) + 1;
+            const idxInPallet = curIdx % palletCap;
+            const curRowNum = Math.floor(idxInPallet / perRow) + 1;
+            const idxInRow = (idxInPallet % perRow) + 1;
+
+            document.getElementById('stack-pallet-badge').innerText = `ПІДДОН ${curPalletNum} З ${totalPallets}`;
+
+            let statusHint = `Поточне відро кладіть на Піддон #${curPalletNum} (${curRowNum}-й ряд, відро ${idxInRow}/${perRow})`;
+            let placementText = `РЯД ${curRowNum} • ВІДРО ${idxInRow} З ${perRow}`;
+
+            if (idxInRow === perRow) {
+                if (idxInPallet + 1 === palletCap) {
+                    placementText += ' ➔ ПІДДОН ПОВНИЙ!';
+                    statusHint = `⚠️ Останнє відро на Піддоні #${curPalletNum}! Наступне відро ставте на новий піддон.`;
+                } else {
+                    placementText += ' ➔ РЯД ПОВНИЙ!';
+                    statusHint = `✓ Ряд ${curRowNum} заповнено! Наступне відро починає ряд ${curRowNum + 1}.`;
+                }
+            }
+
+            document.getElementById('stack-placement-text').innerText = placementText;
+            document.getElementById('stack-status-hint').innerText = statusHint;
         }
 
         function renderActiveOrder(o) {
@@ -1787,6 +1914,24 @@
             if (weightEl) weightEl.innerText = (o.bucket_weight || '25 кг').toUpperCase();
 
             document.getElementById('hero-progress').innerText = `${o.buckets_completed} / ${o.total_buckets}`;
+
+            // Pallet Stacking hero info
+            const palletTextEl = document.getElementById('hero-pallet-text');
+            const palletPillEl = document.getElementById('hero-pallet-pill');
+            const palletIconEl = document.getElementById('hero-pallet-icon');
+            if (palletTextEl && palletPillEl) {
+                if (o.on_pallet) {
+                    palletTextEl.innerText = o.pallet_info || 'Складання на піддон';
+                    palletPillEl.innerText = o.pallet_info ? o.pallet_info.split(':')[0] : 'Піддон';
+                    palletPillEl.style.color = '#ffffff';
+                    if (palletIconEl) palletIconEl.innerText = '📦';
+                } else {
+                    palletTextEl.innerText = 'Без піддона (ручне завантаження в авто)';
+                    palletPillEl.innerText = 'БЕЗ ПІДДОНА';
+                    palletPillEl.style.color = 'var(--text-muted)';
+                    if (palletIconEl) palletIconEl.innerText = '🚫';
+                }
+            }
 
             // Earnings badge for active party
             const earnBox = document.getElementById('hero-earn-box');
@@ -1833,6 +1978,9 @@
                     if (decBox) {
                         decBox.style.display = o.buckets_completed > 0 ? 'block' : 'none';
                     }
+
+                    // Update Smart Pallet Stacking Assistant
+                    renderPalletStackingAssistant(o);
                 }
             } else if (o.status === 'Ready') {
                 pill.className = 'hero-status-pill working';
@@ -2234,6 +2382,124 @@ ${rows.join('\n')}`;
             }
         }
 
+        function calcTerminalPalletInfo(total, weight, onPallet, limitRows) {
+            if (!onPallet || total <= 0) {
+                return {
+                    onPallet: false,
+                    totalPallets: 0,
+                    fullPallets: 0,
+                    remBuckets: 0,
+                    desc: 'Без піддона (ручне завантаження)',
+                    shortBadge: '🚫 Без підд.'
+                };
+            }
+
+            const w = (weight || '').toLowerCase();
+            let perRow = 8;
+            let defaultMaxRows = 3;
+
+            if (w.includes('25')) {
+                perRow = 8;
+                defaultMaxRows = 3;
+            } else if (w.includes('15') || w.includes('10') || w.includes('14')) {
+                perRow = 11;
+                defaultMaxRows = 4;
+            } else if (w.includes('5') || w.includes('4')) {
+                perRow = 16;
+                defaultMaxRows = 4;
+            } else if (w.includes('1.7') || w.includes('2.5')) {
+                perRow = 24;
+                defaultMaxRows = 4;
+            }
+
+            const maxRows = (limitRows && limitRows > 0) ? limitRows : defaultMaxRows;
+            const palletCap = perRow * maxRows;
+            const fullPallets = Math.floor(total / palletCap);
+            const rem = total % palletCap;
+            const totalPallets = Math.ceil(total / palletCap);
+
+            let desc = '';
+            let shortBadge = '';
+
+            if (rem === 0) {
+                if (fullPallets === 1) {
+                    desc = `1 піддон (${palletCap} шт: ${maxRows} р. по ${perRow})`;
+                    shortBadge = `📦 1 підд. (${palletCap} шт)`;
+                } else {
+                    const pWord = (fullPallets >= 2 && fullPallets <= 4) ? 'піддони' : 'піддонів';
+                    desc = `${fullPallets} повних ${pWord} по ${palletCap} шт (${maxRows} р. по ${perRow})`;
+                    shortBadge = `📦 ${fullPallets} підд. (${total} шт)`;
+                }
+            } else {
+                const remFullRows = Math.floor(rem / perRow);
+                const remLoose = rem % perRow;
+                const remParts = [];
+                if (remFullRows > 0) remParts.push(`${remFullRows} р. по ${perRow}`);
+                if (remLoose > 0) remParts.push(`${remLoose} шт`);
+                const remDesc = remParts.join(' + ');
+
+                if (fullPallets === 0) {
+                    desc = `1 піддон на ${rem} шт (${remDesc})`;
+                    shortBadge = `📦 1 підд. (${rem} шт)`;
+                } else {
+                    const pWord = (totalPallets >= 2 && totalPallets <= 4) ? 'піддони' : 'піддонів';
+                    desc = `${totalPallets} ${pWord}: ${fullPallets} по ${palletCap} шт + 1 на ${rem} шт (${remDesc})`;
+                    shortBadge = `📦 ${totalPallets} підд. (${fullPallets}×${palletCap} + ${rem})`;
+                }
+            }
+
+            return {
+                onPallet: true,
+                totalPallets,
+                fullPallets,
+                remBuckets: rem,
+                palletCap,
+                perRow,
+                maxRows,
+                desc,
+                shortBadge
+            };
+        }
+
+        function updateTerminalPalletPreview() {
+            const onPalletEl = document.getElementById('create-on-pallet');
+            if (!onPalletEl) return;
+            const onPallet = onPalletEl.checked;
+            const total = parseInt(document.getElementById('create-total-buckets').value) || 1;
+            
+            let weight = document.getElementById('create-bucket-weight').value;
+            if (weight === '__custom__') {
+                weight = document.getElementById('create-bucket-weight-custom').value.trim() || '25 кг';
+            }
+
+            const limitRows = parseInt(document.getElementById('create-pallet-limit-rows').value) || null;
+            const optRow = document.getElementById('create-pallet-options-row');
+            const modeBadge = document.getElementById('create-pallet-badge');
+            const previewText = document.getElementById('create-pallet-preview-text');
+            const previewIcon = document.getElementById('create-pallet-preview-icon');
+
+            if (!onPallet) {
+                if (optRow) optRow.style.display = 'none';
+                if (modeBadge) {
+                    modeBadge.innerText = 'БЕЗ ПІДДОНА';
+                    modeBadge.style.color = 'var(--text-muted)';
+                }
+                if (previewIcon) previewIcon.innerText = '🚫';
+                if (previewText) previewText.innerText = 'Без піддона (ручне завантаження в авто / багажник)';
+                return;
+            }
+
+            if (optRow) optRow.style.display = 'block';
+            if (modeBadge) {
+                modeBadge.innerText = limitRows ? `ОБМЕЖЕННЯ ${limitRows} РЯДИ` : 'СТАНДАРТ';
+                modeBadge.style.color = '#ffffff';
+            }
+            if (previewIcon) previewIcon.innerText = '📦';
+
+            const info = calcTerminalPalletInfo(total, weight, true, limitRows);
+            if (previewText) previewText.innerText = info.desc;
+        }
+
         function onMaterialChange() {
             vibrateDevice(20);
             const sel = document.getElementById('create-material');
@@ -2267,6 +2533,7 @@ ${rows.join('\n')}`;
                     customWeightInp.style.display = 'none';
                 }
             }
+            updateTerminalPalletPreview();
         }
 
         function onBucketWeightChange() {
@@ -2279,6 +2546,7 @@ ${rows.join('\n')}`;
             } else {
                 customInp.style.display = 'none';
             }
+            updateTerminalPalletPreview();
         }
 
         async function handleCreateOrder(e) {
@@ -2304,16 +2572,24 @@ ${rows.join('\n')}`;
             const rawClient = document.getElementById('create-client-name').value.trim();
             const rawCollection = document.getElementById('create-collection').value.trim();
             const rawColor = document.getElementById('create-color-code').value.trim();
+            const totalBuckets = parseInt(document.getElementById('create-total-buckets').value) || 1;
+
+            const onPallet = document.getElementById('create-on-pallet').checked;
+            const limitRows = parseInt(document.getElementById('create-pallet-limit-rows').value) || null;
+            const palletInfoObj = calcTerminalPalletInfo(totalBuckets, finalWeight, onPallet, limitRows);
 
             const payload = {
                 order_number: null,
                 client_name: rawClient || null,
                 material: finalMaterial,
-                total_buckets: parseInt(document.getElementById('create-total-buckets').value) || 1,
+                total_buckets: totalBuckets,
                 bucket_weight: finalWeight,
                 collection: rawCollection || null,
                 color_code: rawColor || null,
                 base: finalBase,
+                on_pallet: onPallet,
+                pallet_limit_rows: limitRows,
+                pallet_info: palletInfoObj.desc,
             };
 
             const res = await fetch('/api/admin/orders', {
@@ -2415,6 +2691,8 @@ ${rows.join('\n')}`;
                     }
                     onBucketWeightChange();
                 }
+
+                updateTerminalPalletPreview();
 
                 vibrateDevice([100, 50, 100]);
                 playBeep(980, 0.2);
@@ -2550,6 +2828,7 @@ ${rows.join('\n')}`;
             switchMode('dispatcher');
         }
 
+        updateTerminalPalletPreview();
         fetchQueue();
         setInterval(fetchQueue, 3000);
     </script>

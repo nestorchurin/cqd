@@ -380,6 +380,10 @@
                         <div class="spec-label">ФАСУВАННЯ ВІДРА</div>
                         <div id="order-weight" class="spec-value">—</div>
                     </div>
+                    <div class="spec-box">
+                        <div class="spec-label">СКЛАДАННЯ / ПІДДОНИ</div>
+                        <div id="order-pallet" class="spec-value">—</div>
+                    </div>
                     <div class="spec-box" style="grid-column: span 2;">
                         <div class="spec-label">КІЛЬКІСТЬ ВІДЕР У ПАРТІЇ</div>
                         <div id="order-buckets" class="spec-value">—</div>
@@ -481,6 +485,15 @@
             document.getElementById('order-base').innerText = data.base || 'БАЗА A';
             document.getElementById('order-buckets').innerText = `${data.buckets_completed} / ${data.total_buckets}`;
             document.getElementById('order-weight').innerText = data.bucket_weight;
+
+            const palletEl = document.getElementById('order-pallet');
+            if (palletEl) {
+                if (data.on_pallet) {
+                    palletEl.innerText = data.pallet_info ? `📦 ${data.pallet_info}` : '📦 На піддоні';
+                } else {
+                    palletEl.innerText = '🚫 Без піддона (ручне завантаження в авто)';
+                }
+            }
 
             const steps = ['registered', 'pending', 'mixing', 'ready'];
             steps.forEach(s => {

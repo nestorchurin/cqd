@@ -573,6 +573,34 @@
             display: inline-flex;
             align-items: center;
         }
+        .pallet-pill {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .pallet-pill-no {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 999px;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
 
         /* Progress Column */
         .card-progress-box {
@@ -1222,6 +1250,14 @@
             const colorFormatted = formatColor(o);
             const colorBadge = colorFormatted ? `<span class="color-pill">${colorFormatted}</span>` : '';
 
+            let palletBadge = '';
+            if (o.on_pallet) {
+                const pShort = o.pallet_info ? o.pallet_info.split(':')[0] : 'На піддоні';
+                palletBadge = `<span class="pallet-pill" title="${o.pallet_info || ''}">📦 ${pShort}</span>`;
+            } else {
+                palletBadge = `<span class="pallet-pill-no" title="Без піддона (ручне завантаження)">🚫 Без піддона</span>`;
+            }
+
             const microDots = renderMicroDots(o.buckets_completed, o.total_buckets, o.status === 'Mixing');
 
             const newContent = `
@@ -1238,6 +1274,7 @@
                         <div class="card-specs-row">
                             ${baseBadge}
                             ${colorBadge}
+                            ${palletBadge}
                         </div>
                     </div>
                     <div class="card-progress-box">
