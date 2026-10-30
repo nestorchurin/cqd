@@ -340,6 +340,77 @@
             color: var(--text-muted);
             text-transform: uppercase;
         }
+        .footer-contact {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 2px;
+        }
+        .footer-email-link {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 4px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border-dim);
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.2s var(--ease-touch);
+        }
+        .footer-email-link:hover {
+            color: #ffffff;
+            border-color: var(--border-bright);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Side Telegram Link */
+        .side-tg-link {
+            position: fixed;
+            right: 20px;
+            bottom: 24px;
+            z-index: 1000;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(14, 14, 14, 0.88);
+            border: 1px solid var(--border-bright);
+            border-radius: 999px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            color: var(--text-main);
+            text-decoration: none;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.8px;
+            transition: all 0.2s var(--ease-touch);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+        }
+        .side-tg-link:hover {
+            background: rgba(26, 26, 26, 0.95);
+            border-color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+        .side-tg-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #2AABEE;
+            box-shadow: 0 0 8px rgba(42, 171, 238, 0.7);
+        }
+        @media (max-width: 640px) {
+            .side-tg-link {
+                right: 14px;
+                bottom: 16px;
+                padding: 6px 12px;
+                font-size: 0.68rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -450,11 +521,20 @@
                         <span class="footer-dot"></span>
                         <span class="footer-title">Made For STEN</span>
                     </div>
+                    <div class="footer-contact">
+                        <a href="mailto:nestor@yunexal.com" class="footer-email-link">nestor@yunexal.com</a>
+                    </div>
                     <div class="footer-note">ПЕТ-ПРОЄКТ ДЛЯ СЕБЕ // НЕ ДЛЯ КОМПАНІЇ</div>
                 </div>
             </footer>
         </div>
     </div>
+
+    <!-- Side Telegram Link -->
+    <a href="https://t.me/nestor_churin" target="_blank" rel="noopener noreferrer" class="side-tg-link" aria-label="Telegram: @nestor_churin">
+        <span class="side-tg-dot"></span>
+        <span class="side-tg-text">t.me/nestor_churin</span>
+    </a>
 
     <script>
         const token = window.location.pathname.split('/').pop();
