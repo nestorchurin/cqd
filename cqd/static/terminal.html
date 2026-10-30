@@ -1393,13 +1393,13 @@
                     <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 14px; margin-bottom: 16px;">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                             <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-family: var(--font-unbounded); font-size: 0.74rem; letter-spacing: 0.05em; color: #ffffff;">
-                                <input type="checkbox" id="create-on-pallet" checked onchange="updateTerminalPalletPreview()" style="width: 18px; height: 18px; accent-color: #ffffff; cursor: pointer;">
+                                <input type="checkbox" id="create-on-pallet" onchange="updateTerminalPalletPreview()" style="width: 18px; height: 18px; accent-color: #ffffff; cursor: pointer;">
                                 <span>СКЛАДАТИ НА ПІДДОН (ПАЛЕТУВАННЯ)</span>
                             </label>
-                            <span id="create-pallet-badge" style="font-family: var(--font-mono); font-size: 0.68rem; color: #ffffff; background: #111; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">СТАНДАРТ</span>
+                            <span id="create-pallet-badge" style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); background: #111; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border-subtle);">БЕЗ ПІДДОНА</span>
                         </div>
 
-                        <div id="create-pallet-options-row" class="form-field" style="margin-bottom: 10px;">
+                        <div id="create-pallet-options-row" class="form-field" style="margin-bottom: 10px; display: none;">
                             <label class="form-label">ОБМЕЖЕННЯ ВИСОТИ (РЯДІВ НА ПІДДОНІ)</label>
                             <select id="create-pallet-limit-rows" class="form-select" onchange="updateTerminalPalletPreview()">
                                 <option value="0" selected>Стандартна висота (без обмежень)</option>
@@ -1412,8 +1412,8 @@
 
                         <!-- Live Pallet Calculation Result Preview -->
                         <div id="create-pallet-preview" style="font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.4; color: #ffffff; background: #000; border: 1px dashed var(--border-bright); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;">
-                            <span id="create-pallet-preview-icon" style="font-size: 1.2rem;">📦</span>
-                            <div id="create-pallet-preview-text" style="flex: 1;">1 піддон на 5 шт (5 шт)</div>
+                            <span id="create-pallet-preview-icon" style="font-size: 1.2rem;">🚫</span>
+                            <div id="create-pallet-preview-text" style="flex: 1;">Без піддона (ручне завантаження в авто / багажник)</div>
                         </div>
                     </div>
 

@@ -66,7 +66,7 @@ pub fn init_db(db_path: &str) -> Result<(Connection, Vec<u8>, String)> {
             ready_at INTEGER,
             delivered_at INTEGER,
             is_archived INTEGER NOT NULL DEFAULT 0,
-            on_pallet INTEGER NOT NULL DEFAULT 1,
+            on_pallet INTEGER NOT NULL DEFAULT 0,
             pallet_info TEXT
         );
 
@@ -100,7 +100,7 @@ pub fn init_db(db_path: &str) -> Result<(Connection, Vec<u8>, String)> {
 
     // Safe migration: add columns if table already exists
     let _ = conn.execute("ALTER TABLE orders ADD COLUMN collection TEXT", []);
-    let _ = conn.execute("ALTER TABLE orders ADD COLUMN on_pallet INTEGER NOT NULL DEFAULT 1", []);
+    let _ = conn.execute("ALTER TABLE orders ADD COLUMN on_pallet INTEGER NOT NULL DEFAULT 0", []);
     let _ = conn.execute("ALTER TABLE orders ADD COLUMN pallet_info TEXT", []);
 
     // 1. Get or generate signing secret
@@ -309,7 +309,7 @@ pub fn load_active_orders(conn: &Connection) -> Result<HashMap<String, Order>> {
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
-        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let on_pallet_int: i32 = row.get(20).unwrap_or(0);
         let pallet_info: Option<String> = row.get(21).ok();
 
         Ok(Order {
@@ -360,7 +360,7 @@ pub fn load_order_by_token(conn: &Connection, token: &str) -> Result<Option<Orde
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
-        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let on_pallet_int: i32 = row.get(20).unwrap_or(0);
         let pallet_info: Option<String> = row.get(21).ok();
 
         let mut order = Order {
@@ -405,7 +405,7 @@ pub fn load_archived_orders(conn: &Connection, limit: usize) -> Result<Vec<Order
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
-        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let on_pallet_int: i32 = row.get(20).unwrap_or(0);
         let pallet_info: Option<String> = row.get(21).ok();
 
         Ok(Order {
@@ -456,7 +456,7 @@ pub fn load_all_orders_for_earnings(conn: &Connection) -> Result<Vec<Order>> {
         let id: String = row.get(0)?;
         let status_str: String = row.get(10)?;
         let is_archived_int: i32 = row.get(19)?;
-        let on_pallet_int: i32 = row.get(20).unwrap_or(1);
+        let on_pallet_int: i32 = row.get(20).unwrap_or(0);
         let pallet_info: Option<String> = row.get(21).ok();
 
         Ok(Order {

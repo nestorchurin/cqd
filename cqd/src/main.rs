@@ -581,7 +581,7 @@ async fn local_create_order(
     let (final_on_pallet, calculated_pallet_info) = calculate_pallet_info(
         req.total_buckets,
         &req.bucket_weight,
-        req.on_pallet.unwrap_or(true),
+        req.on_pallet.unwrap_or(false),
         req.pallet_limit_rows,
     );
     let final_pallet_info = req
