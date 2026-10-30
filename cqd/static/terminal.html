@@ -740,6 +740,26 @@
         .day-stat-chip strong {
             color: #ffffff;
         }
+        .btn-copy-day {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border-bright);
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-copy-day:hover {
+            background: #ffffff;
+            color: #000000;
+            border-color: #ffffff;
+        }
         .day-orders-list {
             border-top: 1px solid var(--border-dim);
             padding-top: 10px;
@@ -1165,7 +1185,8 @@
 
                 <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); border: 1px solid var(--border-dim); border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
                     <span id="disp-earn-period-text" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">Період: Всі зафіксовані робочі дні</span>
-                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" onclick="copyPeriodReport()" class="btn-copy-day" title="Скопіювати текстовий звіт за весь вибраний період">📋 СКОПІЮВАТИ ЗА ПЕРІОД</button>
                         <span id="disp-earn-period-total" style="font-family: var(--font-dot); font-size: 1.3rem; font-weight: 900; color: #fff;">0 ₴</span>
                         <span id="disp-earn-period-buckets" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">(0 відер)</span>
                     </div>
@@ -2009,7 +2030,10 @@
                             <div style="width: 7px; height: 7px; background: #fff; border-radius: 1px;"></div>
                             <span>${formatDayTitle(day.dateKey, day.timestamp)}</span>
                         </div>
-                        <div class="day-cash-val">+${day.uah.toLocaleString('uk-UA')} ₴</div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button onclick="copyDayReport('${day.dateKey}')" class="btn-copy-day" title="Скопіювати звіт за день для відправки власниці / у чат">📋 СКОПІЮВАТИ ДЕНЬ</button>
+                            <div class="day-cash-val">+${day.uah.toLocaleString('uk-UA')} ₴</div>
+                        </div>
                     </div>
                     <div class="day-stats-pills">
                         <span class="day-stat-chip">25 кг: <strong>${day.b25}</strong> (${(day.b25 * 50).toLocaleString('uk-UA')} ₴)</span>
@@ -2021,6 +2045,114 @@
                     </div>
                 `;
                 feedEl.appendChild(card);
+            });
+        }
+
+        function showToast(msg) {
+            let toast = document.getElementById('global-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'global-toast';
+                toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#ffffff;color:#000000;font-family:var(--font-mono);font-size:0.75rem;font-weight:700;padding:10px 20px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,0.8);z-index:999999;transition:all 0.25s ease;opacity:0;pointer-events:none;letter-spacing:0.5px;';
+                document.body.appendChild(toast);
+            }
+            toast.innerText = msg;
+            toast.style.opacity = '1';
+            toast.style.bottom = '32px';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.bottom = '24px';
+            }, 3000);
+        }
+
+        function copyDayReport(dateKey) {
+            vibrateDevice(35);
+            const sourceList = (allEarningsOrders && allEarningsOrders.length > 0) ? allEarningsOrders : orders;
+            const dayOrders = [];
+            let totalUah = 0;
+            let b25Count = 0;
+            let b15Count = 0;
+            let totalBuckets = 0;
+
+            sourceList.forEach(o => {
+                const completed = o.buckets_completed || (o.status === 'Ready' || o.status === 'Delivered' ? o.total_buckets : 0);
+                if (completed <= 0) return;
+
+                const ts = o.ready_at || o.delivered_at || o.created_at;
+                const d = new Date(ts);
+                const k = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                if (k !== dateKey) return;
+
+                const calibKg = getCalibratedWeightKg(o.bucket_weight);
+                const rate = calibKg >= 20 ? 50 : 45;
+                const earned = completed * rate;
+
+                totalUah += earned;
+                totalBuckets += completed;
+                if (calibKg >= 20) b25Count += completed;
+                else b15Count += completed;
+
+                const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                dayOrders.push(`• ${timeStr} | ${o.client_name}: ${o.material} (${formatWeightWithCalib(o.bucket_weight)}) — ${completed} в. × ${rate} ₴ = ${earned} ₴`);
+            });
+
+            const text = `📊 ЗВІТ ПО КОЛІРУВАННЮ ЗА ${dateKey}
+💰 Заробіток: ${totalUah.toLocaleString('uk-UA')} ₴
+🪣 Всього відер: ${totalBuckets} (25кг: ${b25Count} шт • 15кг/інші: ${b15Count} шт)
+
+Деталізація по накладних:
+${dayOrders.join('\n')}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`✓ Звіт за ${dateKey} скопійовано для Telegram/Viber!`);
+            }).catch(() => {
+                prompt('Скопіюйте текст звіту вручну:', text);
+            });
+        }
+
+        function copyPeriodReport() {
+            vibrateDevice(35);
+            const periodText = document.getElementById('disp-earn-period-text')?.innerText || 'Звіт';
+            const periodTotal = document.getElementById('disp-earn-period-total')?.innerText || '0 ₴';
+            const periodBuckets = document.getElementById('disp-earn-period-buckets')?.innerText || '0 відер';
+
+            const sourceList = (allEarningsOrders && allEarningsOrders.length > 0) ? allEarningsOrders : orders;
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const dayOfWeek = (now.getDay() + 6) % 7;
+            const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).getTime();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+            const rows = [];
+            sourceList.forEach(o => {
+                const completed = o.buckets_completed || (o.status === 'Ready' || o.status === 'Delivered' ? o.total_buckets : 0);
+                if (completed <= 0) return;
+                const ts = o.ready_at || o.delivered_at || o.created_at;
+                const d = new Date(ts);
+                const orderTime = d.getTime();
+
+                if (earningsFilter === 'today' && orderTime < startOfToday) return;
+                if (earningsFilter === 'week' && orderTime < startOfWeek) return;
+                if (earningsFilter === 'month' && orderTime < startOfMonth) return;
+
+                const calibKg = getCalibratedWeightKg(o.bucket_weight);
+                const rate = calibKg >= 20 ? 50 : 45;
+                const earned = completed * rate;
+                const dateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+                rows.push(`• ${dateStr} | ${o.client_name}: ${o.material} (${formatWeightWithCalib(o.bucket_weight)}) — ${completed} в. × ${rate} ₴ = ${earned} ₴`);
+            });
+
+            const text = `📊 ПЕРІОДИЧНИЙ ЗВІТ // ${periodText.toUpperCase()}
+💰 Зароблено: ${periodTotal}
+🪣 Відер: ${periodBuckets}
+
+Виконані партії:
+${rows.join('\n')}`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`✓ Повний звіт за період скопійовано!`);
+            }).catch(() => {
+                prompt('Скопіюйте текст звіту вручну:', text);
             });
         }
 
