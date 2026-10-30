@@ -153,6 +153,103 @@
             border: 1px solid var(--border-bright);
         }
 
+        /* Public Production Stats Strip */
+        .prod-stats-strip {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 480px) {
+            .prod-stats-strip {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+        }
+        .prod-stat-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-dim);
+            border-radius: 18px;
+            padding: 12px 14px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            transition: border-color 0.16s, transform 0.16s;
+        }
+        .prod-stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateY(-1px);
+        }
+        .prod-stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .prod-stat-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+        }
+        .prod-stat-pill-live {
+            font-family: var(--font-mono);
+            font-size: 0.58rem;
+            font-weight: 800;
+            color: #ffffff;
+            background: rgba(215, 25, 33, 0.2);
+            border: 1px solid rgba(215, 25, 33, 0.6);
+            padding: 2px 6px;
+            border-radius: 999px;
+            letter-spacing: 0.5px;
+        }
+        .prod-stat-pill {
+            font-family: var(--font-mono);
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-dim);
+            padding: 2px 6px;
+            border-radius: 999px;
+        }
+        .prod-stat-val-box {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            margin-top: 2px;
+        }
+        .prod-stat-val {
+            font-family: var(--font-dot);
+            font-size: clamp(1.6rem, 3.8vw, 2.3rem);
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: 1.5px;
+            line-height: 1;
+            text-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+        }
+        .prod-stat-unit {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .prod-stat-sub {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .prod-stat-sub strong {
+            color: #ffffff;
+        }
+
         /* Quick Look Metric Pills (Nothing Widgets) */
         .metrics-pills-bar {
             display: grid;
@@ -807,6 +904,32 @@
             </div>
         </div>
 
+        <!-- Production Stats Strip (Сьогодні & Цей тиждень) -->
+        <div class="prod-stats-strip">
+            <div class="prod-stat-card">
+                <div class="prod-stat-header">
+                    <span class="prod-stat-label">01. СЬОГОДНІ</span>
+                    <span class="prod-stat-pill-live">LIVE</span>
+                </div>
+                <div class="prod-stat-val-box">
+                    <span class="prod-stat-val" id="stat-today-val">0</span>
+                    <span class="prod-stat-unit">відер</span>
+                </div>
+                <div class="prod-stat-sub" id="stat-today-sub">25 кг: <strong>0</strong> • 15 кг: <strong>0</strong></div>
+            </div>
+            <div class="prod-stat-card">
+                <div class="prod-stat-header">
+                    <span class="prod-stat-label">02. ЦЕЙ ТИЖДЕНЬ</span>
+                    <span class="prod-stat-pill">ТИЖДЕНЬ</span>
+                </div>
+                <div class="prod-stat-val-box">
+                    <span class="prod-stat-val" id="stat-week-val">0</span>
+                    <span class="prod-stat-unit">відер</span>
+                </div>
+                <div class="prod-stat-sub" id="stat-week-sub">25 кг: <strong>0</strong> • 15 кг: <strong>0</strong></div>
+            </div>
+        </div>
+
         <!-- Nothing Quick Look Metric Widgets -->
         <div class="metrics-pills-bar">
             <div class="metric-pill ready-pill" onclick="scrollToSection('ready-section')">
@@ -898,9 +1021,18 @@
 
         async function fetchQueue() {
             try {
-                const res = await fetch('/api/public/queue');
-                if (res.ok) {
-                    const orders = await res.json();
+                const [queueRes, statsRes] = await Promise.all([
+                    fetch('/api/public/queue'),
+                    fetch('/api/public/stats')
+                ]);
+
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    renderPublicStats(stats);
+                }
+
+                if (queueRes.ok) {
+                    const orders = await queueRes.json();
                     const query = document.getElementById('search-input').value.toLowerCase().trim();
                     const currentHash = JSON.stringify(orders);
 
@@ -920,6 +1052,18 @@
             } catch (err) {
                 console.error(err);
             }
+        }
+
+        function renderPublicStats(s) {
+            const todayValEl = document.getElementById('stat-today-val');
+            const todaySubEl = document.getElementById('stat-today-sub');
+            if (todayValEl) todayValEl.innerText = s.today_buckets || 0;
+            if (todaySubEl) todaySubEl.innerHTML = `25 кг: <strong>${s.today_25kg || 0}</strong> • 15 кг: <strong>${s.today_15kg || 0}</strong>`;
+
+            const weekValEl = document.getElementById('stat-week-val');
+            const weekSubEl = document.getElementById('stat-week-sub');
+            if (weekValEl) weekValEl.innerText = s.week_buckets || 0;
+            if (weekSubEl) weekSubEl.innerHTML = `25 кг: <strong>${s.week_25kg || 0}</strong> • 15 кг: <strong>${s.week_15kg || 0}</strong>`;
         }
 
         function filterOrders() {

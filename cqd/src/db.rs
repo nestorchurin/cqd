@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use chrono::Utc;
 use hmac::{Hmac, Mac};
 use rusqlite::{params, Connection, Result};
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::{Order, OrderEvent, OrderStatus, PushKeys, PushSubscription};
@@ -468,6 +469,69 @@ pub fn load_all_orders_for_earnings(conn: &Connection) -> Result<Vec<Order>> {
         list.push(o_res?);
     }
     Ok(list)
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PublicProductionStats {
+    pub today_buckets: u32,
+    pub today_25kg: u32,
+    pub today_15kg: u32,
+    pub week_buckets: u32,
+    pub week_25kg: u32,
+    pub week_15kg: u32,
+}
+
+pub fn get_public_production_stats(
+    conn: &Connection,
+    start_of_today_ms: i64,
+    start_of_week_ms: i64,
+) -> Result<PublicProductionStats> {
+    let mut stmt = conn.prepare(
+        "SELECT buckets_completed, bucket_weight, COALESCE(ready_at, delivered_at, created_at) as event_time
+         FROM orders
+         WHERE buckets_completed > 0"
+    )?;
+
+    let mut stats = PublicProductionStats {
+        today_buckets: 0,
+        today_25kg: 0,
+        today_15kg: 0,
+        week_buckets: 0,
+        week_25kg: 0,
+        week_15kg: 0,
+    };
+
+    let rows = stmt.query_map([], |row| {
+        let done: u32 = row.get(0)?;
+        let weight: String = row.get(1)?;
+        let time: i64 = row.get(2)?;
+        Ok((done, weight, time))
+    })?;
+
+    for r in rows {
+        let (done, weight, time) = r?;
+        let is_25 = weight.contains("25");
+
+        if time >= start_of_week_ms {
+            stats.week_buckets += done;
+            if is_25 {
+                stats.week_25kg += done;
+            } else {
+                stats.week_15kg += done;
+            }
+        }
+
+        if time >= start_of_today_ms {
+            stats.today_buckets += done;
+            if is_25 {
+                stats.today_25kg += done;
+            } else {
+                stats.today_15kg += done;
+            }
+        }
+    }
+
+    Ok(stats)
 }
 
 pub fn load_events_for_order(conn: &Connection, order_id: &str) -> Result<Vec<OrderEvent>> {

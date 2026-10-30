@@ -261,6 +261,25 @@ async fn public_get_queue(State(state): State<SharedState>) -> Json<Vec<PublicOr
     Json(list)
 }
 
+async fn public_get_stats(State(state): State<SharedState>) -> Result<Json<db::PublicProductionStats>, StatusCode> {
+    use chrono::{Datelike, Local, TimeZone};
+    let now = Local::now();
+    let today_start = Local
+        .with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0)
+        .single()
+        .unwrap_or(now);
+    let start_of_today_ms = today_start.timestamp_millis();
+    let days_from_monday = now.weekday().num_days_from_monday();
+    let week_start = today_start - chrono::Duration::days(days_from_monday as i64);
+    let start_of_week_ms = week_start.timestamp_millis();
+
+    let lock = state.read().await;
+    let conn = lock.db.lock().map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let stats = db::get_public_production_stats(&conn, start_of_today_ms, start_of_week_ms)
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    Ok(Json(stats))
+}
+
 async fn public_queue_page() -> Response {
     get_embedded_file("public_queue.html", "text/html; charset=utf-8")
 }
@@ -963,6 +982,7 @@ async fn main() {
     let public_app = Router::new()
         .route("/", get(public_queue_page))
         .route("/api/public/queue", get(public_get_queue))
+        .route("/api/public/stats", get(public_get_stats))
         .route("/track/{token}", get(public_tracker_page))
         .route("/api/public/orders/{token}", get(public_get_order))
         .route("/api/public/orders/{token}/subscribe", post(public_subscribe_push))
@@ -981,6 +1001,7 @@ async fn main() {
         .route("/terminal", get(local_terminal_page))
         .route("/dispatcher", get(local_dispatcher_page))
         .route("/admin", get(local_dispatcher_page))
+        .route("/api/public/stats", get(public_get_stats))
         .route("/api/admin/orders", get(local_list_orders).post(local_create_order))
         .route("/api/admin/archive", get(local_get_archive))
         .route("/api/admin/earnings", get(local_get_earnings))
